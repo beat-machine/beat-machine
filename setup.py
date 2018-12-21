@@ -18,7 +18,7 @@ URL = 'https://github.com/dhsavell/beat-machine'
 EMAIL = 'dhsavell05@gmail.com'
 AUTHOR = 'dhsavell'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.0'
+VERSION = '0.0.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -100,7 +100,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    py_modules=['beatmachine'],
+    packages=find_packages(exclude=('test',)),
 
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
