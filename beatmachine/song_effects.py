@@ -10,6 +10,8 @@ def every_nth_beat(n, beat_effect):
     :param beat_effect: The function to apply every nth beat.
     :return: A song effect that applies the given function to every nth beat of the song.
     """
+    if n <= 0:
+        raise ValueError('Invalid value of n for nth beat effect: ' + n)
 
     def song_effect(beats):
         modified_beats = []
@@ -77,6 +79,9 @@ def swap_beats(x, y):
     """
     if x >= y:
         raise ValueError('First beat swap parameter must be less than the second!')
+
+    if x <= 0 or y <= 0:
+        raise ValueError(f'Invalid beat swap values: x={x}, y={y}')
 
     def song_effect(beats):
         result = []
