@@ -39,7 +39,9 @@ def randomize_all(beats):
     :param beats: Beats to randomize.
     :return: The given beats in random order.
     """
-    return random.shuffle(beats)
+    shuffled_beats = beats.copy()
+    random.shuffle(shuffled_beats)
+    return shuffled_beats
 
 
 def sort_by_loudness(beats):
