@@ -1,21 +1,42 @@
 import unittest
+import random
+from unittest.mock import patch
 
-from beatmachine.song_effects import *
-
-
-def dummy_effect(_):
-    return 'Applied'
+from beatmachine.effects.song import RandomizeAllBeats, SwapBeats
 
 
 class TestSongEffects(unittest.TestCase):
-    def test_every_beat(self):
-        self.assertEqual(['Applied', 'Applied', 'Applied'], every_beat(dummy_effect)([1, 2, 3]))
+    def setUp(self):
+        self.dummy_song = list(range(1, 5))
 
-    def test_every_nth_beat(self):
-        self.assertEqual([0, 'Applied', 2, 'Applied', 4], every_nth_beat(2, dummy_effect)([0, 1, 2, 3, 4]))
+    def test_randomize_all(self):
+        seed = random.seed
+        random_a = random.Random(seed)
+        random_b = random.Random(seed)
+
+        expected_result = self.dummy_song.copy()
+        random_a.shuffle(expected_result)
+
+        with patch('random.shuffle', random_b.shuffle):
+            randomize_effect = RandomizeAllBeats()
+            self.assertEqual(expected_result, list(randomize_effect(self.dummy_song)))
 
     def test_swap_beats(self):
-        self.assertEqual([1, 4, 3, 2, 5, 8, 7, 6], swap_beats(2, 4)([1, 2, 3, 4, 5, 6, 7, 8]))
+        swap_effect = SwapBeats(x_period=2, y_period=4)
+        self.assertEqual([1, 4, 3, 2], list(swap_effect(self.dummy_song)))
+
+    def test_zero_swap_beats_disallowed(self):
+        self.assertRaises(ValueError, lambda: SwapBeats(0, 1))
+        self.assertRaises(ValueError, lambda: SwapBeats(1, 0))
+        self.assertRaises(ValueError, lambda: SwapBeats(0, 0))
+
+    def test_negative_swap_beats_disallowed(self):
+        self.assertRaises(ValueError, lambda: SwapBeats(-1, 0))
+        self.assertRaises(ValueError, lambda: SwapBeats(0, -1))
+        self.assertRaises(ValueError, lambda: SwapBeats(-1, -1))
+
+    def test_equal_swap_beats_disallowed(self):
+        self.assertRaises(ValueError, lambda: SwapBeats(10, 10))
 
 
 if __name__ == '__main__':
