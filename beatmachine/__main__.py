@@ -1,8 +1,8 @@
 from click import command, option
+from pydub import AudioSegment
 
-from beatmachine.effects.periodic import *
-from beatmachine.effect_loader import load_all_effects
 from beatmachine.processor import apply_effects, remove_leading_silence
+from beatmachine.registry import load_all_effects
 
 
 @command()

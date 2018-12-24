@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from pydub import AudioSegment
 
+from beatmachine.registry import loadable
+
 
 class PeriodicEffect(ABC):
     """
@@ -44,7 +46,11 @@ class PeriodicEffect(ABC):
                 if result is not None:
                     yield result
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.period == other.period
 
+
+@loadable('silence', optional_parameters={'period': int})
 class SilenceEveryNth(PeriodicEffect):
     """
     A periodic effect that silences beats, retaining their length.
@@ -63,7 +69,11 @@ class SilenceEveryNth(PeriodicEffect):
     def apply_effect_to_beat(self, beat_audio):
         return self.silence_producer(len(beat_audio))
 
+    def __eq__(self, other):
+        return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
 
+
+@loadable('remove', optional_parameters={'period': int})
 class RemoveEveryNth(PeriodicEffect):
     """
     A periodic effect that completely removes beats.
@@ -78,6 +88,7 @@ class RemoveEveryNth(PeriodicEffect):
         return None
 
 
+@loadable('cut', optional_parameters={'period': int})
 class CutEveryNthInHalf(PeriodicEffect):
     """
     A periodic effect that cuts beats in half.
@@ -87,6 +98,7 @@ class CutEveryNthInHalf(PeriodicEffect):
         return beat_audio[:(len(beat_audio) // 2)]
 
 
+@loadable('reverse', optional_parameters={'period': int})
 class ReverseEveryNth(PeriodicEffect):
     """
     A periodic effect that reverses beats.
@@ -96,6 +108,7 @@ class ReverseEveryNth(PeriodicEffect):
         return beat_audio.reverse()
 
 
+@loadable('repeat', optional_parameters={'period': int, 'times': int})
 class RepeatEveryNth(PeriodicEffect):
     """
     A periodic effect that repeats beats a specified number of times.
@@ -112,3 +125,6 @@ class RepeatEveryNth(PeriodicEffect):
 
     def apply_effect_to_beat(self, beat_audio):
         return beat_audio * self.times
+
+    def __eq__(self, other):
+        return super(RepeatEveryNth, self).__eq__(other) and self.times == other.times
