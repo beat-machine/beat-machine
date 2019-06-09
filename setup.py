@@ -18,7 +18,7 @@ URL = 'https://github.com/dhsavell/beat-machine'
 EMAIL = 'dhsavell05@gmail.com'
 AUTHOR = 'dhsavell'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '1.0.0'
+VERSION = '1.1.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
