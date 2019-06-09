@@ -1,3 +1,0 @@
-Click==7.0
-pydub==0.23.0
-invoke==1.2.0
