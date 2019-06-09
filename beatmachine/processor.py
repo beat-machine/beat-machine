@@ -3,7 +3,7 @@ from madmom.features.beats import DBNBeatTrackingProcessor, RNNBeatProcessor
 from pydub import AudioSegment
 
 
-def load_as_beats(audio_path, audio_format='mp3', min_bpm=60, max_bpm=300):
+def load_as_beats(audio_path, audio_format='mp3', min_bpm=60, max_bpm=300, online=False):
     """
     Loads audio from a file, determining beats automatically with a recurrent neural network.
 
@@ -11,10 +11,11 @@ def load_as_beats(audio_path, audio_format='mp3', min_bpm=60, max_bpm=300):
     :param audio_format: Format of the audio file to load.
     :param min_bpm: Minimum permissible BPM.
     :param max_bpm: Maximum permissible BPM.
+    :param online: Whether or not to use madmom's "online" configurations.
     :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
     """
-    tracker = DBNBeatTrackingProcessor(min_bpm=min_bpm, max_bpm=max_bpm, fps=100)
-    processor = RNNBeatProcessor()
+    tracker = DBNBeatTrackingProcessor(min_bpm=min_bpm, max_bpm=max_bpm, fps=100, online=online)
+    processor = RNNBeatProcessor(online=online)
     times = tracker(processor(audio_path))
 
     audio = AudioSegment.from_file(audio_path, format=audio_format)
