@@ -1,3 +1,30 @@
+import numpy
+from madmom.features.beats import DBNBeatTrackingProcessor, RNNBeatProcessor
+from pydub import AudioSegment
+
+
+def load_as_beats(audio_path, audio_format='mp3', min_bpm=60, max_bpm=300):
+    """
+    Loads audio from a file, determining beats automatically with a recurrent neural network.
+
+    :param audio_path: Path to the audio file to load.
+    :param audio_format: Format of the audio file to load.
+    :param min_bpm: Minimum permissible BPM.
+    :param max_bpm: Maximum permissible BPM.
+    :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
+    """
+    tracker = DBNBeatTrackingProcessor(min_bpm=min_bpm, max_bpm=max_bpm, fps=100)
+    processor = RNNBeatProcessor()
+    times = tracker(processor(audio_path))
+
+    audio = AudioSegment.from_file(audio_path, format=audio_format)
+
+    last_time_s = 0
+    for i, time_s in numpy.ndenumerate(times):
+        yield audio[int(last_time_s * 1000):int(time_s * 1000)]
+        last_time_s = time_s
+
+
 def beats_of(audio, bpm):
     """
     Splits a given AudioSegment into a list of beats and their indices. Each beat is represented as a Beat object.
@@ -41,6 +68,17 @@ def apply_effects(audio, bpm, song_effects):
     """
     beats = list(beats_of(audio, bpm))
 
+    apply_effects_to_beats(beats, song_effects)
+
+
+def apply_effects_to_beats(beats, song_effects):
+    """
+    Applies a list of effects to a list of PyDub AudioSegments representing the beats of a song.
+
+    :param beats: List of beats.
+    :param song_effects: Effects to apply.
+    :return: An AudioSegment comprised of the given beats with the effects applied.
+    """
     for song_effect in song_effects:
         beats = song_effect(beats)
 
