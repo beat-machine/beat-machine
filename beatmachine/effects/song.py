@@ -1,9 +1,9 @@
 import random
 
-from beatmachine.registry import loadable
+from beatmachine.effect_loader import register_effect
 
 
-@loadable('randomize')
+@register_effect('randomize')
 class RandomizeAllBeats:
     """
     An effect that randomizes the order of every single beat of a song.
@@ -18,7 +18,7 @@ class RandomizeAllBeats:
         return isinstance(other, RandomizeAllBeats)
 
 
-@loadable('swap', required_parameters={'x_period': int, 'y_period': int})
+@register_effect('swap', required_parameters={'x_period': int, 'y_period': int})
 class SwapBeats:
     """
     An effect that swaps every two specified beats. For example, specifying periods 2 and 4 would result in every

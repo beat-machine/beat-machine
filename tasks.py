@@ -4,7 +4,7 @@ from setuptools import sandbox
 # noinspection PyUnresolvedReferences
 from beatmachine.effects import *
 # noinspection PyProtectedMember
-from beatmachine.registry import _registry as registry
+from beatmachine.effect_loader import _registry as registry
 
 
 @task

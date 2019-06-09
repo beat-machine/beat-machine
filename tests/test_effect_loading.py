@@ -2,7 +2,7 @@ import unittest
 
 from beatmachine.effects.periodic import CutEveryNthInHalf, RepeatEveryNth
 from beatmachine.effects.song import SwapBeats
-from beatmachine.registry import load_effect
+from beatmachine.effect_loader import load_effect
 
 
 class TestEffectLoading(unittest.TestCase):

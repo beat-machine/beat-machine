@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pydub import AudioSegment
 
-from beatmachine.registry import loadable
+from beatmachine.effect_loader import register_effect
 
 
 class PeriodicEffect(ABC):
@@ -50,7 +50,7 @@ class PeriodicEffect(ABC):
         return isinstance(other, self.__class__) and self.period == other.period
 
 
-@loadable('silence', optional_parameters={'period': int})
+@register_effect('silence', optional_parameters={'period': int})
 class SilenceEveryNth(PeriodicEffect):
     """
     A periodic effect that silences beats, retaining their length.
@@ -73,7 +73,7 @@ class SilenceEveryNth(PeriodicEffect):
         return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
 
 
-@loadable('remove', optional_parameters={'period': int})
+@register_effect('remove', optional_parameters={'period': int})
 class RemoveEveryNth(PeriodicEffect):
     """
     A periodic effect that completely removes beats.
@@ -88,7 +88,7 @@ class RemoveEveryNth(PeriodicEffect):
         return None
 
 
-@loadable('cut', optional_parameters={'period': int})
+@register_effect('cut', optional_parameters={'period': int})
 class CutEveryNthInHalf(PeriodicEffect):
     """
     A periodic effect that cuts beats in half.
@@ -98,7 +98,7 @@ class CutEveryNthInHalf(PeriodicEffect):
         return beat_audio[:(len(beat_audio) // 2)]
 
 
-@loadable('reverse', optional_parameters={'period': int})
+@register_effect('reverse', optional_parameters={'period': int})
 class ReverseEveryNth(PeriodicEffect):
     """
     A periodic effect that reverses beats.
@@ -108,7 +108,7 @@ class ReverseEveryNth(PeriodicEffect):
         return beat_audio.reverse()
 
 
-@loadable('repeat', optional_parameters={'period': int, 'times': int})
+@register_effect('repeat', optional_parameters={'period': int, 'times': int})
 class RepeatEveryNth(PeriodicEffect):
     """
     A periodic effect that repeats beats a specified number of times.
