@@ -4,13 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-invoke = "==1.2.0"
+invoke = "*"
+parameterized = "*"
 
 [packages]
-click = "==7.0"
-pydub = "==0.23.0"
-cython = "*"
+click = "*"
+pydub = "*"
 madmom = "*"
+pyfftw = "*"
 
 [requires]
 python_version = "3.7"
