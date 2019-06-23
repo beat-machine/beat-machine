@@ -13,7 +13,7 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'beat-machine'
-DESCRIPTION = 'A program that rearranges and/or applies effects to each beat of a song.'
+DESCRIPTION = 'A library for applying beat-based effects to songs'
 URL = 'https://github.com/dhsavell/beat-machine'
 EMAIL = 'dhsavell05@gmail.com'
 AUTHOR = 'dhsavell'
@@ -22,7 +22,7 @@ VERSION = '1.1.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'Click', 'pydub'
+    'Click', 'pydub', 'madmom', 'pyfftw'
 ]
 
 # What packages are optional?
@@ -101,10 +101,6 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(exclude=('tests',)),
-
-    # entry_points={
-    #     'console_scripts': ['mycli=mymodule:cli'],
-    # },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
