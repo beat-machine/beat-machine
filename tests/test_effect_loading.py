@@ -1,58 +1,27 @@
 import unittest
 
-from beatmachine.effects.periodic import CutEveryNthInHalf, RepeatEveryNth
-from beatmachine.effects.song import SwapBeats
-from beatmachine.effect_loader import load_effect
+from parameterized import parameterized
+
+import beatmachine.effects as fx
 
 
 class TestEffectLoading(unittest.TestCase):
-    def test_load_registered_effect_simple(self):
-        obj = {
-            'type': 'cut',
-            'period': 2
-        }
 
-        self.assertEqual(CutEveryNthInHalf(period=2), load_effect(obj))
-
-    def test_load_registered_effect_without_specifying_optional(self):
-        obj = {
-            'type': 'repeat'
-        }
-
-        self.assertEqual(RepeatEveryNth(), load_effect(obj))
-
-    def test_load_registered_effect_with_required(self):
-        obj = {
-            'type': 'swap',
-            'x_period': 2,
-            'y_period': 4
-        }
-
-        self.assertEqual(SwapBeats(2, 4), load_effect(obj))
-
-    def test_load_unregistered_effect_fails(self):
-        obj = {
-            'type': 'an invalid effect',
-            'foo': 'bar'
-        }
-
-        self.assertRaises(ValueError, load_effect, obj)
-
-    def test_load_registered_effect_missing_required_fails(self):
-        obj = {
-            'type': 'swap'
-        }
-
-        self.assertRaises(ValueError, load_effect, obj)
-
-    def test_load_registered_effect_with_invalid_values(self):
-        obj = {
-            'type': 'swap',
-            'x_period': 'not an integer',
-            'y_period': 'also not an integer'
-        }
-
-        self.assertRaises(ValueError, load_effect, obj)
+    @parameterized.expand([
+        ('Silence every 2', {'type': 'silence', 'period': 2}, fx.periodic.SilenceEveryNth(period=2)),
+        ('Remove every 2', {'type': 'remove', 'period': 2}, fx.periodic.RemoveEveryNth(period=2)),
+        ('Cut every 2', {'type': 'cut', 'period': 2}, fx.periodic.CutEveryNthInHalf(period=2)),
+        ('Reverse every 2', {'type': 'reverse', 'period': 2}, fx.periodic.ReverseEveryNth(period=2)),
+        ('Repeat every 2 twice', {
+            'type': 'repeat',
+            'period': 2,
+            'times': 2
+        }, fx.periodic.RepeatEveryNth(period=2, times=2)),
+        ('Randomize all beats', {'type': 'randomize'}, fx.temporal.RandomizeAllBeats()),
+        ('Swap 2 and 4', {'type': 'swap', 'x_period': 2, 'y_period': 4}, fx.temporal.SwapBeats(x_period=2, y_period=4))
+    ])
+    def test_load_registered_effect_simple(self, name, definition, result):
+        self.assertEqual(result, fx.base.EffectRegistry.load_effect_from_dict(definition))
 
 
 if __name__ == '__main__':

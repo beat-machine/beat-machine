@@ -1,18 +1,19 @@
-from click import command, option
-from pydub import AudioSegment
+import json
 
-from beatmachine.processor import apply_effects, remove_leading_silence
-from beatmachine.effect_loader import load_all_effects
+from click import command, option
+
+import beatmachine as bm
 
 
 @command()
 @option('--input', help='File to process.', required=True)
-@option('--bpm', help='BPM of the input audio.', type=int, required=True)
 @option('--effects', help='JSON representation of effects to apply.', required=True)
 @option('--output', help='Output mp3 file path.', required=True)
-def main(input, bpm, effects, output):
-    audio = remove_leading_silence(AudioSegment.from_mp3(input))
-    return apply_effects(audio, int(bpm), load_all_effects(effects)).export(output, format='mp3')
+def main(input, effects, output):
+    beats = bm.loader.load_beats_by_signal(input)
+    effects = [bm.effects.load_from_dict(e) for e in json.loads(effects)]
+    result = bm.editor.apply_effects(beats, effects)
+    return sum(result).export(output)
 
 
 if __name__ == '__main__':

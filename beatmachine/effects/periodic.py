@@ -1,129 +1,112 @@
-from abc import ABC, abstractmethod
+import abc
+from typing import Callable, Optional
+
 from pydub import AudioSegment
 
-from beatmachine.effect_loader import register_effect
+from beatmachine.effects.base import BaseEffect, EffectABCMeta
 
 
-class PeriodicEffect(ABC):
+class PeriodicEffect(BaseEffect, abc.ABC):
     """
     A PeriodicEffect is an effect that gets applied to beats at a fixed interval, i.e. every other beat. A
     PeriodicEffect with a period of 1 gets applied to every single beat.
     """
 
-    def __init__(self, period=1):
-        """
-        Initializes this PeriodicEffect.
-        :param period: Period of applying this effect to beats. Beats whose indices (starting at 1) are multiples of
-                       this value will have the effect applied to them.
-        """
+    def __init__(self, *, period: int = 1):
         if period <= 0:
-            raise ValueError(f'Invalid period {period} for periodic effect')
+            raise ValueError(f'Effect period must be >= 0, but was {period}')
 
         self.period = period
 
-    @abstractmethod
-    def apply_effect_to_beat(self, beat_audio):
+    def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
         """
-        Applies this PeriodicEffect to a single beat.
-        :param beat_audio: Single beat to apply this effect to.
-        :return: Beat audio with the effect applied.
+        Processes a single beat.
+        :param beat: Beat to process.
+        :return: Updated beat or None if it should be removed.
         """
         raise NotImplementedError
 
     def __call__(self, beats):
-        """
-        Applies this PeriodicEffect to a song, represented as a list of AudioSegments (each beat).
-        :param beats: Song as a list of beats to apply this PeriodicEffect to.
-        :return: A generator yielding beats of the modified song.
-        """
-        if self.period > len(beats):
-            yield from beats
-        elif self.period == 1:
-            yield from map(self.apply_effect_to_beat, beats)
-        else:
-            for i, beat in enumerate(beats):
-                result = self.apply_effect_to_beat(beat) if (i - 1) % self.period == 0 else beat
-                if result is not None:
-                    yield result
+        for i, beat in enumerate(beats):
+            result = self.process_beat(beat) if (i - 1) % self.period == 0 else beat
+            if result is not None:
+                yield result
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.period == other.period
 
 
-@register_effect('silence', optional_parameters={'period': int})
-class SilenceEveryNth(PeriodicEffect):
+class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that silences beats, retaining their length.
     """
 
-    def __init__(self, period=1, silence_producer=AudioSegment.silent):
-        """
-        Initializes this SilenceEveryNth effect.
-        :param period: Period of applying this effect to beats. Beats whose indices (starting at 1) are multiples of
-                       this value will have the effect applied to them.
-        :param silence_producer: Method used to produce silent beats.
-        """
-        super().__init__(period)
+    __effect_name__ = 'silence'
+
+    def __init__(self, silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent, *, period: int = 1):
+        super().__init__(period=period)
         self.silence_producer = silence_producer
 
-    def apply_effect_to_beat(self, beat_audio):
-        return self.silence_producer(len(beat_audio))
+    def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
+        return self.silence_producer(len(beat))
 
     def __eq__(self, other):
         return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
 
 
-@register_effect('remove', optional_parameters={'period': int})
-class RemoveEveryNth(PeriodicEffect):
+class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that completely removes beats.
     """
 
-    def __init__(self, period=2):
-        super().__init__(period)
-        if period <= 1:
-            raise ValueError('Attempted to remove every single beat of a song')
+    __effect_name__ = 'remove'
 
-    def apply_effect_to_beat(self, beat_audio):
+    def __init__(self, *, period: int = 1):
+        if period < 2:
+            raise ValueError(f'`remove` effect period must be >= 2, but was {period}')
+        super().__init__(period=period)
+
+    def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
         return None
 
 
-@register_effect('cut', optional_parameters={'period': int})
-class CutEveryNthInHalf(PeriodicEffect):
+class CutEveryNthInHalf(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that cuts beats in half.
     """
 
-    def apply_effect_to_beat(self, beat_audio):
+    __effect_name__ = 'cut'
+
+    def process_beat(self, beat_audio):
         return beat_audio[:(len(beat_audio) // 2)]
 
 
-@register_effect('reverse', optional_parameters={'period': int})
-class ReverseEveryNth(PeriodicEffect):
+class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that reverses beats.
     """
 
-    def apply_effect_to_beat(self, beat_audio):
+    __effect_name__ = 'reverse'
+
+    def process_beat(self, beat_audio):
         return beat_audio.reverse()
 
 
-@register_effect('repeat', optional_parameters={'period': int, 'times': int})
-class RepeatEveryNth(PeriodicEffect):
+class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that repeats beats a specified number of times.
     """
 
-    def __init__(self, period=1, times=2):
-        super().__init__(period)
-        if times == 1:
-            raise ValueError('Attempted to create an ineffective RepeatEveryNth effect (x1)')
-        if times < 1:
-            raise ValueError(f'Attempted to create an invalid RepeatEveryNth effect (x{times})')
+    __effect_name__ = 'repeat'
+
+    def __init__(self, *, period: int = 1, times: int = 2):
+        if times < 2:
+            raise ValueError(f'Repeat effect must have `times` >= 2, but instead got {times}')
+        super().__init__(period=period)
 
         self.times = times
 
-    def apply_effect_to_beat(self, beat_audio):
+    def process_beat(self, beat_audio):
         return beat_audio * self.times
 
     def __eq__(self, other):
