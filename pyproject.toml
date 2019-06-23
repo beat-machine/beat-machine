@@ -6,6 +6,7 @@ requires = [
 build-backend = "flit.buildapi"
 
 [tool.flit.metadata]
+description-file="README.md"
 module = "beatmachine"
 author = "dhsavell"
 author-email = "dhsavell05@gmail.com"
