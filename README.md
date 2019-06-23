@@ -96,7 +96,7 @@ possibilities.
 There are two ways to create a basic effect class:
  - Create a class with the metaclass `beatmachine.effects.base.EffectRegistry`
  - Inherit from `beatmachine.effects.base.BaseEffect` with metaclass `beatmachine.effects.base.EffectABCMeta`
-    - This is recommended since it provides all the necessary 
+    - This is recommended since it provides all the necessary attributes as an abstract base class
     
 The resulting effect class will automatically be loadable through `beatmachine.effects.load_from_dict`. Make sure that
 any configurable parameters are specified as keyword arguments, since `load_from_dict` passes fields directly to
