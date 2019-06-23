@@ -8,7 +8,7 @@ from pydub import AudioSegment
 
 
 def load_beats_by_signal(fp: Union[str, BinaryIO], audio_format: str = 'mp3', min_bpm: int = 60, max_bpm: int = 300,
-                         fps: int = 100) -> Generator[AudioSegment]:
+                         fps: int = 100) -> Generator[AudioSegment, None, None]:
     """
     A generator that loads beats based on audio data itself, handling variations in tempo.
 
@@ -33,7 +33,8 @@ def load_beats_by_signal(fp: Union[str, BinaryIO], audio_format: str = 'mp3', mi
         last_time_s = time_s
 
 
-def load_beats_by_bpm(fp: Union[str, BinaryIO], bpm: int, audio_format: str = 'mp3') -> Generator[AudioSegment]:
+def load_beats_by_bpm(fp: Union[str, BinaryIO], bpm: int, audio_format: str = 'mp3') -> \
+        Generator[AudioSegment, None, None]:
     """
     A generator that loads beats strictly by a given BPM assuming no fluctuations in tempo. Significantly faster than
     `load_beats_by_signal` however can be less accurate, especially in live performances.
