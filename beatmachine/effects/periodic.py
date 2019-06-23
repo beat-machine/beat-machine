@@ -19,14 +19,14 @@ class PeriodicEffect(BaseEffect, abc.ABC):
         self.period = period
 
     def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
+        """
+        Processes a single beat.
+        :param beat: Beat to process.
+        :return: Updated beat or None if it should be removed.
+        """
         raise NotImplementedError
 
     def __call__(self, beats):
-        """
-        Applies this PeriodicEffect to a song, represented as a list of AudioSegments (each beat).
-        :param beats: Song as a list of beats to apply this PeriodicEffect to.
-        :return: A generator yielding beats of the modified song.
-        """
         for i, beat in enumerate(beats):
             result = self.process_beat(beat) if (i - 1) % self.period == 0 else beat
             if result is not None:
@@ -44,12 +44,6 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     __effect_name__ = 'silence'
 
     def __init__(self, silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent, *, period: int = 1):
-        """
-        Initializes this SilenceEveryNth effect.
-        :param period: Period of applying this effect to beats. Beats whose indices (starting at 1) are multiples of
-                       this value will have the effect applied to them.
-        :param silence_producer: Method used to produce silent beats.
-        """
         super().__init__(period=period)
         self.silence_producer = silence_producer
 
