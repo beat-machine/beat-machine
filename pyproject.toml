@@ -6,8 +6,14 @@ requires = [
 build-backend = "flit.buildapi"
 
 [tool.flit.metadata]
-description-file="README.md"
 module = "beatmachine"
+requires = [
+    "pydub",
+    "madmom",
+    "click",
+    "pyfftw"
+]
+description-file="README.md"
 author = "dhsavell"
 author-email = "dhsavell05@gmail.com"
 home-page = "https://github.com/dhsavell/beat-machine"
