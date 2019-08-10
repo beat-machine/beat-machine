@@ -17,11 +17,13 @@ class EffectRegistry(type):
             if name not in mcs.effects:
                 mcs.effects[cls.__effect_name__] = cls
         except AttributeError as e:
-            raise AttributeError('Attempted to register an effect class without an __effect_name__ attribute') from e
+            raise AttributeError(
+                "Attempted to register an effect class without an __effect_name__ attribute"
+            ) from e
         return cls
 
     @staticmethod
-    def load_effect_from_dict(effect: dict) -> 'BaseEffect':
+    def load_effect_from_dict(effect: dict) -> "BaseEffect":
         """
         Loads an effect based on a key-value definition. This is represented as a Python dictionary but could be loaded
         from anywhere, i.e. JSON data.
@@ -34,25 +36,26 @@ class EffectRegistry(type):
         :raises ValueError: if the effect failed to load, likely due to an invalid/missing parameter.
         :return: An effect based on the given definition.
         """
-        if 'type' not in effect:
-            raise KeyError('Effect definition missing `type` key')
+        if "type" not in effect:
+            raise KeyError("Effect definition missing `type` key")
 
-        effect_type = effect['type']
+        effect_type = effect["type"]
 
         try:
             kwargs = effect.copy()
-            del kwargs['type']
+            del kwargs["type"]
             return EffectRegistry.effects[effect_type](**kwargs)
         except KeyError as e:
-            raise KeyError(f'Unknown effect `{effect_type}`') from e
+            raise KeyError(f"Unknown effect `{effect_type}`") from e
         except ValueError as e:
-            raise ValueError(f'An effect of type `{effect_type}` failed to load') from e
+            raise ValueError(f"An effect of type `{effect_type}` failed to load") from e
 
 
 class EffectABCMeta(EffectRegistry, abc.ABCMeta):
     """
     An EffectABCMeta serves as a metaclass for effects inheriting from BaseEffect to avoid metaclass conflict issues.
     """
+
     pass
 
 
@@ -60,6 +63,7 @@ class BaseEffect(abc.ABC):
     """
     A BaseEffect provides abstract methods for all attributes necessary for a valid effect.
     """
+
     __abstract__ = True
 
     @property
@@ -71,7 +75,9 @@ class BaseEffect(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def __call__(self, beats: Iterable[AudioSegment]) -> Generator[AudioSegment, None, None]:
+    def __call__(
+        self, beats: Iterable[AudioSegment]
+    ) -> Generator[AudioSegment, None, None]:
         """
         Applies this effect to a given list of beats.
         :param beats: An iterable of beats to process.

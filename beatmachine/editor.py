@@ -5,7 +5,9 @@ from pydub import AudioSegment
 from beatmachine.effects.base import BaseEffect
 
 
-def apply_effects(beats: Iterable[AudioSegment], effects: Iterable[BaseEffect]) -> Generator[AudioSegment, None, None]:
+def apply_effects(
+    beats: Iterable[AudioSegment], effects: Iterable[BaseEffect]
+) -> Generator[AudioSegment, None, None]:
     """
     Applies a collection of effects to a song represented by a collection of beats.
 

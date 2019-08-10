@@ -7,8 +7,13 @@ from madmom.features import DBNBeatTrackingProcessor, RNNBeatProcessor
 from pydub import AudioSegment
 
 
-def load_beats_by_signal(fp: Union[str, BinaryIO], audio_format: str = 'mp3', min_bpm: int = 60, max_bpm: int = 300,
-                         fps: int = 100) -> Generator[AudioSegment, None, None]:
+def load_beats_by_signal(
+    fp: Union[str, BinaryIO],
+    audio_format: str = "mp3",
+    min_bpm: int = 60,
+    max_bpm: int = 300,
+    fps: int = 100,
+) -> Generator[AudioSegment, None, None]:
     """
     A generator that loads beats based on audio data itself, handling variations in tempo.
 
@@ -29,12 +34,13 @@ def load_beats_by_signal(fp: Union[str, BinaryIO], audio_format: str = 'mp3', mi
 
     last_time_s = 0
     for i, time_s in numpy.ndenumerate(times):
-        yield audio[int(last_time_s * 1000):int(time_s * 1000)]
+        yield audio[int(last_time_s * 1000) : int(time_s * 1000)]
         last_time_s = time_s
 
 
-def load_beats_by_bpm(fp: Union[str, BinaryIO], bpm: int, audio_format: str = 'mp3') -> \
-        Generator[AudioSegment, None, None]:
+def load_beats_by_bpm(
+    fp: Union[str, BinaryIO], bpm: int, audio_format: str = "mp3"
+) -> Generator[AudioSegment, None, None]:
     """
     A generator that loads beats strictly by a given BPM assuming no fluctuations in tempo. Significantly faster than
     `load_beats_by_signal` however can be less accurate, especially in live performances.
@@ -47,4 +53,4 @@ def load_beats_by_bpm(fp: Union[str, BinaryIO], bpm: int, audio_format: str = 'm
     audio = pydub.AudioSegment.from_file(fp, format=audio_format)
     beat_size_ms = 60_000 // bpm
     for beat_start_ms in range(0, len(audio), beat_size_ms):
-        yield audio[beat_start_ms:beat_start_ms + beat_size_ms]
+        yield audio[beat_start_ms : beat_start_ms + beat_size_ms]

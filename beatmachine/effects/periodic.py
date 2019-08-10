@@ -14,7 +14,7 @@ class PeriodicEffect(BaseEffect, abc.ABC):
 
     def __init__(self, *, period: int = 1):
         if period <= 0:
-            raise ValueError(f'Effect period must be >= 0, but was {period}')
+            raise ValueError(f"Effect period must be >= 0, but was {period}")
 
         self.period = period
 
@@ -41,9 +41,14 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     A periodic effect that silences beats, retaining their length.
     """
 
-    __effect_name__ = 'silence'
+    __effect_name__ = "silence"
 
-    def __init__(self, silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent, *, period: int = 1):
+    def __init__(
+        self,
+        silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent,
+        *,
+        period: int = 1,
+    ):
         super().__init__(period=period)
         self.silence_producer = silence_producer
 
@@ -51,7 +56,10 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         return self.silence_producer(len(beat))
 
     def __eq__(self, other):
-        return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
+        return (
+            super(SilenceEveryNth, self).__eq__(other)
+            and self.silence_producer == other.silence_producer
+        )
 
 
 class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
@@ -59,11 +67,11 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     A periodic effect that completely removes beats.
     """
 
-    __effect_name__ = 'remove'
+    __effect_name__ = "remove"
 
     def __init__(self, *, period: int = 1):
         if period < 2:
-            raise ValueError(f'`remove` effect period must be >= 2, but was {period}')
+            raise ValueError(f"`remove` effect period must be >= 2, but was {period}")
         super().__init__(period=period)
 
     def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
@@ -75,10 +83,10 @@ class CutEveryNthInHalf(PeriodicEffect, metaclass=EffectABCMeta):
     A periodic effect that cuts beats in half.
     """
 
-    __effect_name__ = 'cut'
+    __effect_name__ = "cut"
 
     def process_beat(self, beat_audio):
-        return beat_audio[:(len(beat_audio) // 2)]
+        return beat_audio[: (len(beat_audio) // 2)]
 
 
 class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
@@ -86,7 +94,7 @@ class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     A periodic effect that reverses beats.
     """
 
-    __effect_name__ = 'reverse'
+    __effect_name__ = "reverse"
 
     def process_beat(self, beat_audio):
         return beat_audio.reverse()
@@ -97,11 +105,13 @@ class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     A periodic effect that repeats beats a specified number of times.
     """
 
-    __effect_name__ = 'repeat'
+    __effect_name__ = "repeat"
 
     def __init__(self, *, period: int = 1, times: int = 2):
         if times < 2:
-            raise ValueError(f'Repeat effect must have `times` >= 2, but instead got {times}')
+            raise ValueError(
+                f"Repeat effect must have `times` >= 2, but instead got {times}"
+            )
         super().__init__(period=period)
 
         self.times = times
