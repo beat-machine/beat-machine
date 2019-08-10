@@ -7,6 +7,17 @@ The Beat Machine is a library for playing with beats of songs, inspired by the c
 [/r/BeatEdits](https://www.reddit.com/r/BeatEdits/). It works both as a library and as a command-line utility that
 reads effects from a JSON array.
 
+## Installation
+
+One of the Beat Machine's dependencies, `madmom`, requires `Cython` to be present before installation. If you encounter
+an error along the lines of:
+
+```
+Command "python setup.py egg_info" failed with error code 1 in /tmp/tmp1d2dis8pbuild/madmom/
+```
+
+Try installing Cython (`pip install Cython`) beforehand as a separate build step.
+
 ## Examples
 
 A few examples of common edits are available below. In all cases, multiple effects can be supplied. When more than
