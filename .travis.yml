@@ -2,11 +2,11 @@ language: python
 dist: xenial
 
 python:
-- 3.7
+- "3.7"
 
 install:
-- pip install pipenv
-- pipenv install --dev
+- pip install cython pipenv
+- pipenv install --system --dev
 
 script:
 - python -m unittest discover tests
