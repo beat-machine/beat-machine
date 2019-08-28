@@ -1,6 +1,7 @@
 import abc
 from typing import Callable, Optional
 
+import deprecation
 from pydub import AudioSegment
 
 from beatmachine.effects.base import BaseEffect, EffectABCMeta
@@ -78,15 +79,30 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         return None
 
 
-class CutEveryNthInHalf(PeriodicEffect, metaclass=EffectABCMeta):
+class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that cuts beats in half.
     """
 
     __effect_name__ = "cut"
 
+    def __init__(self, *, period: int = 1, denominator: int = 2, take_index: int = 0):
+        super().__init__(period=period)
+        self.denominator = denominator
+        self.take_index = take_index
+
     def process_beat(self, beat_audio):
-        return beat_audio[: (len(beat_audio) // 2)]
+        size = len(beat_audio) // self.denominator
+        offset = self.take_index * size
+        return beat_audio[offset : offset + size]
+
+
+@deprecation.deprecated(
+    deprecated_in="2.1.0",
+    details="Succeeded by CutEveryNth, whose defaults have the same behavior as CutEveryNthInHalf.",
+)
+class CutEveryNthInHalf(CutEveryNth):
+    __effect_name__ = "_cut_old"
 
 
 class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):

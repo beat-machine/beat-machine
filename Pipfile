@@ -12,6 +12,7 @@ click = "*"
 pydub = "*"
 madmom = "*"
 pyfftw = "*"
+deprecation = "*"
 
 [requires]
 python_version = "3.7"
