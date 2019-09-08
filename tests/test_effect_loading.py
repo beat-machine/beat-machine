@@ -21,7 +21,12 @@ class TestEffectLoading(unittest.TestCase):
             (
                 "Cut every 2",
                 {"type": "cut", "period": 2},
-                fx.periodic.CutEveryNthInHalf(period=2),
+                fx.periodic.CutEveryNth(period=2),
+            ),
+            (
+                "Cut every 1 in 1/3 taking 3rd part",
+                {"type": "cut", "period": 1, "denominator": 3, "take_index": 2},
+                fx.periodic.CutEveryNth(period=1, denominator=3, take_index=2),
             ),
             (
                 "Reverse every 2",
@@ -42,6 +47,11 @@ class TestEffectLoading(unittest.TestCase):
                 "Swap 2 and 4",
                 {"type": "swap", "x_period": 2, "y_period": 4},
                 fx.temporal.SwapBeats(x_period=2, y_period=4),
+            ),
+            (
+                "Remap [0, 1, 2, 3] => [3, 1, 2, 0]",
+                {"type": "remap", "mapping": [3, 1, 2, 0]},
+                fx.temporal.RemapBeats(mapping=[3, 1, 2, 0]),
             ),
         ]
     )

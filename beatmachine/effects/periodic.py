@@ -96,6 +96,14 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         offset = self.take_index * size
         return beat_audio[offset : offset + size]
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, CutEveryNth)
+            and other.period == self.period
+            and other.denominator == self.denominator
+            and other.take_index == self.take_index
+        )
+
 
 @deprecation.deprecated(
     deprecated_in="2.1.0",
