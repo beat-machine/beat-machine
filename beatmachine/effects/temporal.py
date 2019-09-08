@@ -1,4 +1,8 @@
+import itertools
 import random
+from typing import Iterable, Generator, List, T
+
+from pydub import AudioSegment
 
 from beatmachine.effects.base import BaseEffect, EffectABCMeta
 
@@ -17,6 +21,12 @@ class RandomizeAllBeats(BaseEffect, metaclass=EffectABCMeta):
 
     def __eq__(self, other):
         return isinstance(other, RandomizeAllBeats)
+
+
+def chunks(iterable: Iterable[T], size=10) -> Generator[List[T], None, None]:
+    iterator = iter(iterable)
+    for first in iterator:
+        yield list(itertools.chain([first], itertools.islice(iterator, size - 1)))
 
 
 class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
@@ -44,11 +54,8 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
         self.high_period = (max(x_period, y_period) - 1) % group_size + 1
         self.group_size = group_size
 
-    def __call__(self, beats):  # TODO: Creating a list of beats can probably be avoided
-        beat_list = list(beats)
-
-        for group_start in range(0, len(beat_list), self.group_size):
-            group = beat_list[group_start : group_start + self.group_size]
+    def __call__(self, beats):
+        for group in chunks(beats, self.group_size):
             if len(group) >= self.high_period:
                 (group[self.low_period - 1], group[self.high_period - 1]) = (
                     group[self.high_period - 1],
@@ -61,3 +68,38 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
             other.low_period,
             other.high_period,
         )
+
+
+class RemapBeats(BaseEffect, metaclass=EffectABCMeta):
+    """
+    An effect that remaps beats based on a list of target indices. For example, a remap effect with mapping [0, 3, 2, 1]
+    behaves identically to a swap effect with periods 2 and 4.
+    """
+
+    __effect_name__ = "remap"
+
+    def __init__(self, *, mapping: List[int]):
+        if any(m < 0 or m >= len(mapping) for m in mapping):
+            raise ValueError(
+                f"values of `remap` effect with {len(mapping)} values must be within range "
+                f"[0, {len(mapping) - 1}], however the following values fall outside of it: "
+                f"{[m for m in mapping if m < 0 or m >= len(mapping)]}"
+            )
+
+        self.mapping = mapping
+
+    def __call__(
+        self, beats: Iterable[AudioSegment]
+    ) -> Generator[AudioSegment, None, None]:
+        for group in chunks(beats, len(self.mapping)):
+            group_size = len(group)
+            remapped_group = []
+
+            for beat_idx in self.mapping:
+                if beat_idx < group_size:
+                    remapped_group.append(group[beat_idx])
+
+            yield from remapped_group
+
+    def __eq__(self, other):
+        return isinstance(other, RemapBeats) and self.mapping == other.mapping

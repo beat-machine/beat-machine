@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from parameterized import parameterized
 
-from beatmachine.effects.temporal import RandomizeAllBeats, SwapBeats
+from beatmachine.effects.temporal import RandomizeAllBeats, SwapBeats, RemapBeats
 
 
 class TestSongEffects(unittest.TestCase):
@@ -19,18 +19,79 @@ class TestSongEffects(unittest.TestCase):
         expected_result = self.dummy_song.copy()
         random_a.shuffle(expected_result)
 
-        with patch('random.shuffle', random_b.shuffle):
+        with patch("random.shuffle", random_b.shuffle):
             randomize_effect = RandomizeAllBeats()
             self.assertEqual(expected_result, list(randomize_effect(self.dummy_song)))
 
-    @parameterized.expand([
-        ('Beats 2 and 4', [1, 4, 3, 2] * 2, 2, 4, [1, 2, 3, 4] * 2),
-        ('Beats 1 and 3', [3, 2, 1, 4] * 2, 1, 3, [1, 2, 3, 4] * 2),
-        ('Beats 1 and 4', [4, 2, 3, 1] * 2, 1, 4, [1, 2, 3, 4] * 2)
-    ])
-    def test_swap_beats(self, _name, song, x, y, expected):
-        swap_effect = SwapBeats(x_period=x, y_period=y)
-        self.assertEqual(expected, list(swap_effect(song)))
+    @parameterized.expand(
+        [
+            (
+                "Beats 2 and 4",
+                (2, 4),
+                4,
+                [1, 2, 3, 4, 5, 6, 7, 8],
+                [1, 4, 3, 2, 5, 8, 7, 6],
+            ),
+            (
+                "Beats 1 and 3",
+                (1, 3),
+                4,
+                [1, 2, 3, 4, 5, 6, 7, 8],
+                [3, 2, 1, 4, 7, 6, 5, 8],
+            ),
+            (
+                "Beats 2 and 4 with non-even song",
+                (2, 4),
+                4,
+                [1, 2, 3, 4, 5],
+                [1, 4, 3, 2, 5],
+            ),
+            (
+                "Beats 1 and 3 with non-even song",
+                (1, 3),
+                4,
+                [1, 2, 3, 4, 5],
+                [3, 2, 1, 4, 5],
+            ),
+        ]
+    )
+    def test_swap_beats(self, _name, periods, beats_per_measure, song, result):
+        effect = SwapBeats(
+            x_period=periods[0], y_period=periods[1], group_size=beats_per_measure
+        )
+        self.assertEqual(result, list(effect(song)))
+
+    @parameterized.expand(
+        [
+            (
+                "Remap [0, 1, 2, 3] => [3, 2, 1, 0]",
+                [5, 6, 7, 8],
+                [3, 2, 1, 0],
+                [8, 7, 6, 5],
+            ),
+            (
+                "Remap [0, 1, 2, 3] => [0, 3, 2, 1]",
+                [5, 6, 7, 8],
+                [0, 3, 2, 1],
+                [5, 8, 7, 6],
+            ),
+            (
+                "Remap [0, 1, 2, 3] => [0, 0, 2, 2]",
+                [5, 6, 7, 8],
+                [0, 0, 2, 2],
+                [5, 5, 7, 7],
+            ),
+            (
+                "Partially remap [0, 1, 2, 3] => [3, 2, 1, 0]",
+                [5, 6],
+                [0, 3, 2, 1],
+                [5, 6],
+            ),
+        ]
+    )
+    def test_remap_beats(self, _name, song, mapping, expected):
+        remap_effect = RemapBeats(mapping=mapping)
+        self.assertEqual(expected, list(remap_effect(song)))
 
     def test_zero_swap_beats_disallowed(self):
         self.assertRaises(ValueError, lambda: SwapBeats(x_period=0, y_period=1))
@@ -46,5 +107,5 @@ class TestSongEffects(unittest.TestCase):
         self.assertRaises(ValueError, lambda: SwapBeats(x_period=10, y_period=10))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
