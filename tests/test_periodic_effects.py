@@ -1,5 +1,7 @@
 import unittest
 
+from parameterized import parameterized
+
 from beatmachine.effects.periodic import *
 
 
@@ -25,6 +27,37 @@ class TestPeriodicEffects(unittest.TestCase):
         self.assertEqual(
             [[1] * 2, [2] * 2, [3] * 2, [4] * 2], list(cut_effect(self.dummy_song))
         )
+
+    @parameterized.expand(
+        [
+            (
+                "1st part of every 1/2",
+                [[1, -1], [2, -2], [3, -3], [4, -4]],
+                CutEveryNth(period=1, denominator=2, take_index=0),
+                [[1], [2], [3], [4]],
+            ),
+            (
+                "2nd part of every 1/2",
+                [[1, -1], [2, -2], [3, -3], [4, -4]],
+                CutEveryNth(period=1, denominator=2, take_index=0),
+                [[-1], [-2], [-3], [-4]],
+            ),
+            (
+                "1st part of every 1/3",
+                [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                CutEveryNth(period=1, denominator=3, take_index=0),
+                [[1], [4], [7]],
+            ),
+            (
+                "3rd part of every 1/3",
+                [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                CutEveryNth(period=1, denominator=3, take_index=0),
+                [[3], [6], [9]],
+            ),
+        ]
+    )
+    def test_cut_every_nth(self, _name, song, effect, expected):
+        pass
 
     def test_reverse_every_nth(self):
         try:
