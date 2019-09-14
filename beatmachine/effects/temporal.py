@@ -1,3 +1,7 @@
+"""
+The `temporal` module contains effects that modify beats by rearranging them over the entire song.
+"""
+
 import itertools
 import random
 from typing import Iterable, Generator, List, T
@@ -23,7 +27,7 @@ class RandomizeAllBeats(BaseEffect, metaclass=EffectABCMeta):
         return isinstance(other, RandomizeAllBeats)
 
 
-def chunks(iterable: Iterable[T], size=10) -> Generator[List[T], None, None]:
+def _chunks(iterable: Iterable[T], size: int=10) -> Generator[List[T], None, None]:
     iterator = iter(iterable)
     for first in iterator:
         yield list(itertools.chain([first], itertools.islice(iterator, size - 1)))
@@ -31,8 +35,8 @@ def chunks(iterable: Iterable[T], size=10) -> Generator[List[T], None, None]:
 
 class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
     """
-    An effect that swaps every two specified beats. For example, specifying periods 2 and 4 would result in every
-    second and fourth beats being swapped.
+    SwapBeats swaps every two specified beats. For example, specifying periods 2 and 4 would result in every second and
+    fourth beats being swapped.
     """
 
     __effect_name__ = "swap"
@@ -55,7 +59,7 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
         self.group_size = group_size
 
     def __call__(self, beats):
-        for group in chunks(beats, self.group_size):
+        for group in _chunks(beats, self.group_size):
             if len(group) >= self.high_period:
                 (group[self.low_period - 1], group[self.high_period - 1]) = (
                     group[self.high_period - 1],
@@ -91,7 +95,7 @@ class RemapBeats(BaseEffect, metaclass=EffectABCMeta):
     def __call__(
         self, beats: Iterable[AudioSegment]
     ) -> Generator[AudioSegment, None, None]:
-        for group in chunks(beats, len(self.mapping)):
+        for group in _chunks(beats, len(self.mapping)):
             group_size = len(group)
             remapped_group = []
 

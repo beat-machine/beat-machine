@@ -1,5 +1,5 @@
 """
-The `effects` module provides a base effect class as well as some sample implementations of song effects.
+The `effects` module provides a base effect class as well as some common effects to play with.
 """
 
 from . import base, periodic, temporal

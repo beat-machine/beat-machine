@@ -1,3 +1,7 @@
+"""
+The ``loader`` module contains functions for loading beats from song files.
+"""
+
 from typing import BinaryIO, Union, Generator
 
 import numpy

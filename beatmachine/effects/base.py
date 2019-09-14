@@ -1,3 +1,8 @@
+"""
+The `base` module contains a base effect class as well as a metaclass-based registry for simple, batteries-included
+deserialization of effects.
+"""
+
 import abc
 from typing import Generator, Iterable
 
@@ -53,7 +58,7 @@ class EffectRegistry(type):
 
 class EffectABCMeta(EffectRegistry, abc.ABCMeta):
     """
-    An EffectABCMeta serves as a metaclass for effects inheriting from BaseEffect to avoid metaclass conflict issues.
+    EffectABCMeta is a metaclass combining EffectRegistry and ABCMeta.
     """
 
     pass
@@ -61,7 +66,7 @@ class EffectABCMeta(EffectRegistry, abc.ABCMeta):
 
 class BaseEffect(abc.ABC):
     """
-    A BaseEffect provides abstract methods for all attributes necessary for a valid effect.
+    BaseEffect is an abstract base for a valid effect loadable by the EffectRegistry.
     """
 
     __abstract__ = True
@@ -80,6 +85,7 @@ class BaseEffect(abc.ABC):
     ) -> Generator[AudioSegment, None, None]:
         """
         Applies this effect to a given list of beats.
+
         :param beats: An iterable of beats to process.
         :return: A generator that yields modified beats, potentially in a different order or with a different length.
         """

@@ -13,7 +13,7 @@ requires = [
     "click",
     "pyfftw"
 ]
-description-file="README.md"
+description-file="README.rst"
 author = "dhsavell"
 author-email = "dhsavell05@gmail.com"
 home-page = "https://github.com/dhsavell/beat-machine"
