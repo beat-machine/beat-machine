@@ -27,7 +27,7 @@ class RandomizeAllBeats(BaseEffect, metaclass=EffectABCMeta):
         return isinstance(other, RandomizeAllBeats)
 
 
-def _chunks(iterable: Iterable[T], size: int=10) -> Generator[List[T], None, None]:
+def _chunks(iterable: Iterable[T], size: int = 10) -> Generator[List[T], None, None]:
     iterator = iter(iterable)
     for first in iterator:
         yield list(itertools.chain([first], itertools.islice(iterator, size - 1)))

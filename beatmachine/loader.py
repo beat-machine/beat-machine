@@ -55,6 +55,6 @@ def load_beats_by_bpm(
     :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
     """
     audio = pydub.AudioSegment.from_file(fp, format=audio_format)
-    beat_size_ms = 60_000 // bpm
+    beat_size_ms = 60000 // bpm
     for beat_start_ms in range(0, len(audio), beat_size_ms):
         yield audio[beat_start_ms : beat_start_ms + beat_size_ms]

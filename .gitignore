@@ -108,6 +108,7 @@ venv.bak/
 
 # IDE files
 .idea/
+.vscode/
 
 # Audio files used in unit tests
 !tests/resources/*.mp3

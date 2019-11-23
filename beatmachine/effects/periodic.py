@@ -50,10 +50,10 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     __effect_name__ = "silence"
 
     def __init__(
-            self,
-            silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent,
-            *,
-            period: int = 1,
+        self,
+        silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent,
+        *,
+        period: int = 1,
     ):
         super().__init__(period=period)
         self.silence_producer = silence_producer
@@ -63,8 +63,8 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     def __eq__(self, other):
         return (
-                super(SilenceEveryNth, self).__eq__(other)
-                and self.silence_producer == other.silence_producer
+            super(SilenceEveryNth, self).__eq__(other)
+            and self.silence_producer == other.silence_producer
         )
 
 
@@ -99,14 +99,14 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     def process_beat(self, beat_audio):
         size = len(beat_audio) // self.denominator
         offset = self.take_index * size
-        return beat_audio[offset: offset + size]
+        return beat_audio[offset : offset + size]
 
     def __eq__(self, other):
         return (
-                isinstance(other, CutEveryNth)
-                and other.period == self.period
-                and other.denominator == self.denominator
-                and other.take_index == self.take_index
+            isinstance(other, CutEveryNth)
+            and other.period == self.period
+            and other.denominator == self.denominator
+            and other.take_index == self.take_index
         )
 
 
