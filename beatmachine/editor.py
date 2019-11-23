@@ -1,3 +1,7 @@
+"""
+The ``editor`` module contains high-level beat editing functions.
+"""
+
 from typing import Iterable, Generator
 
 from pydub import AudioSegment
@@ -11,9 +15,9 @@ def apply_effects(
     """
     Applies a collection of effects to a song represented by a collection of beats.
 
-    :param beats: Beats to apply the given effects to.
-    :param effects: Effects to apply to the song.
-    :return: A list of beats with the given effects applied. This can be coalesced into a single audio clip with `sum`.
+    :param beats: Beats to apply the given effects to
+    :param effects: Effects to apply to the song
+    :return: A generator yielding beats with the given effects applied
     """
     for effect in effects:
         beats = effect(beats)
