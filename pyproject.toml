@@ -1,21 +1,20 @@
-[build-system]
-requires = [
-    "flit",
-    "Cython"  # For `madmom`
-]
-build-backend = "flit.buildapi"
+[tool.poetry]
+name = "beatmachine"
+version = "2.2.0-dev"
+description = "A library for procedurally remixing songs"
+authors = ["dhsavell <dhsavell05@gmail.com>"]
+license = "MIT"
 
-[tool.flit.metadata]
-module = "beatmachine"
-requires = [
-    "pydub",
-    "madmom",
-    "click",
-    "pyfftw",
-    "deprecation"
-]
-description-file="README.rst"
-author = "dhsavell"
-author-email = "dhsavell05@gmail.com"
-home-page = "https://github.com/dhsavell/beat-machine"
-classifiers = ["License :: OSI Approved :: MIT License"]
+[tool.poetry.dependencies]
+python = "^3.8"
+pydub = "^0.23.1"
+madmom = {git = "https://github.com/CPJKU/madmom.git", rev = "6e6af99"}
+deprecation = "^2.0"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^18.3-alpha.0", allows-prereleases = true}
+sphinx = "^2.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
