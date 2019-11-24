@@ -17,6 +17,7 @@ def load_beats_by_signal(
     min_bpm: int = 60,
     max_bpm: int = 300,
     fps: int = 100,
+    online_mode: bool = False,
 ) -> Generator[AudioSegment, None, None]:
     """
     A generator that loads beats based on audio data itself, handling variations in tempo.
@@ -26,12 +27,15 @@ def load_beats_by_signal(
     :param min_bpm: Minimum permissible BPM.
     :param max_bpm: Maximum permissible BPM.
     :param fps: Resolution to process beats at.
+    :param online_mode: Whether or not to use madmom's online mode for processing.
     :return: A generator yielding each beat of the input song as a PyDub AudioSegment. Note that the initial
              beat-finding process is comparatively time-consuming and can take up to a few minutes for longer songs.
     """
 
-    tracker = DBNBeatTrackingProcessor(min_bpm=min_bpm, max_bpm=max_bpm, fps=fps)
-    processor = RNNBeatProcessor()
+    tracker = DBNBeatTrackingProcessor(
+        min_bpm=min_bpm, max_bpm=max_bpm, fps=fps, online=online_mode
+    )
+    processor = RNNBeatProcessor(online=online_mode)
     times = tracker(processor(Signal(fp)))
 
     audio = pydub.AudioSegment.from_file(fp, format=audio_format)

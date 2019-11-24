@@ -8,7 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.8"
 pydub = "^0.23.1"
-madmom = {git = "https://github.com/CPJKU/madmom.git", rev = "6e6af99"}
+madmom = {git = "https://github.com/CPJKU/madmom.git", rev = "6e6af99", recursive = true}
 deprecation = "^2.0"
 
 [tool.poetry.dev-dependencies]

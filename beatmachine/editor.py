@@ -3,9 +3,7 @@ The ``editor`` module contains high-level beat editing functions.
 """
 
 from typing import Iterable, Generator
-
 from pydub import AudioSegment
-
 from beatmachine.effects.base import BaseEffect
 
 
