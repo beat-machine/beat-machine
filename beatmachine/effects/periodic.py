@@ -1,3 +1,8 @@
+"""
+The `periodic` module contains effects that update beats independently of others at regular intervals, i.e. removing
+every other beat.
+"""
+
 import abc
 from typing import Callable, Optional
 
@@ -70,7 +75,7 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     __effect_name__ = "remove"
 
-    def __init__(self, *, period: int = 1):
+    def __init__(self, *, period: int = 2):
         if period < 2:
             raise ValueError(f"`remove` effect period must be >= 2, but was {period}")
         super().__init__(period=period)
