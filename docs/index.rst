@@ -6,6 +6,7 @@ Next Steps
 .. toctree::
    :maxdepth: 2
 
+   modules
    cli
    json_effects
 
