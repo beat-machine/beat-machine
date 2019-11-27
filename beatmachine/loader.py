@@ -21,6 +21,7 @@ def load_beats_by_signal(
 ) -> Generator[AudioSegment, None, None]:
     """
     A generator that loads beats based on audio data itself, handling variations in tempo.
+    This is a long, blocking, memory-intensive process! Setting ``online_mode`` to True may improve performance.
 
     :param fp: Path to or file-like object of the audio to load.
     :param audio_format: Audio data format.
@@ -28,8 +29,7 @@ def load_beats_by_signal(
     :param max_bpm: Maximum permissible BPM.
     :param fps: Resolution to process beats at.
     :param online_mode: Whether or not to use madmom's online mode for processing.
-    :return: A generator yielding each beat of the input song as a PyDub AudioSegment. Note that the initial
-             beat-finding process is comparatively time-consuming and can take up to a few minutes for longer songs.
+    :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
     """
 
     tracker = DBNBeatTrackingProcessor(
@@ -51,7 +51,7 @@ def load_beats_by_bpm(
 ) -> Generator[AudioSegment, None, None]:
     """
     A generator that loads beats strictly by a given BPM assuming no fluctuations in tempo. Significantly faster than
-    `load_beats_by_signal` however can be less accurate, especially in live performances.
+    `load_beats_by_signal` but far less accurate, especially in live performances.
 
     :param fp: Path to or file-like object of the audio to load.
     :param bpm: Song BPM. This can sometimes be found online.
