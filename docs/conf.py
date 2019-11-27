@@ -23,7 +23,7 @@ author = "dhsavell"
 master_doc = "index"
 
 # The full version, including alpha/beta/rc tags
-release = "2.2.0-alpha.0"
+release = "2.2.0-alpha.1"
 
 # -- General configuration ---------------------------------------------------
 
