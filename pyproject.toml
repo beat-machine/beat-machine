@@ -1,3 +1,7 @@
+[tool.dephell.main]
+from = {format = "poetry", path = "pyproject.toml"}
+to = {format = "setuppy", path = "setup.py"}
+
 [tool.poetry]
 name = "beatmachine"
 version = "2.2.0-dev"
@@ -6,7 +10,7 @@ authors = ["dhsavell <dhsavell05@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7.5"
+python = "^3.7"
 pydub = "^0.23.1"
 madmom = {git = "https://github.com/CPJKU/madmom.git", rev = "6e6af99", recursive = true}
 deprecation = "^2.0"
@@ -15,6 +19,11 @@ deprecation = "^2.0"
 black = {version = "^18.3-alpha.0", allows-prereleases = true}
 sphinx = "^2.2"
 parameterized = "^0.7.1"
+fissix = {version = "^18.6-alpha.0", allows-prereleases = true}
+dephell = "^0.7.9"
+
+[tool.poetry.scripts]
+beatmachine = "beatmachine"
 
 [build-system]
 requires = ["poetry>=0.12"]
