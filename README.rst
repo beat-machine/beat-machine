@@ -1,15 +1,11 @@
 beatmachine
 ===========
 
-.. image:: https://travis-ci.com/dhsavell/beat-machine.svg?branch=master
-    :alt: Build Status
-    :target: https://travis-ci.com/dhsavell/beat-machine
-
 .. image:: https://img.shields.io/pypi/v/beatmachine
     :alt: PyPI
     :target: https://pypi.org/project/beatmachine/
 
-The Beat Machine is a library for remixing songs by procedurally editing their beats, inspired by the creations over on
+The Beat Machine is a library for remixing songs by procedurally editing their beats, inspired by the creations on
 `/r/BeatEdits <https://www.reddit.com/r/BeatEdits/>`_. It works both as a library and as a command-line utility.
 
 Installation
@@ -41,7 +37,7 @@ Here's a sample::
     import beatmachine as bm
 
     # This takes a while with the defaults!
-    beats = Beats.from_song('in.mp3')
+    beats = bm.Beats.from_song('in.mp3')
 
     # The consolidate() method returns a PyDub AudioSegment, which we can use
     # however we want.
@@ -49,4 +45,3 @@ Here's a sample::
 
     # The Beats class is immutable, so we're free to use it again.
     beats.apply_all(bm.effects.RemoveEveryNth(2), bm.effects.CutEveryNth()).consolidate().export('out_2.mp3')
-
