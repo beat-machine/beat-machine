@@ -17,11 +17,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install poetry
-        poetry config settings.virtualenvs.create false
         poetry install -n
     - name: Lint with Black
       run: |
-        black --check .
+        poetry run black --check .
     - name: Test with pytest
       run: |
-        python -m unittest discover test
+        poetry run python -m unittest discover test
