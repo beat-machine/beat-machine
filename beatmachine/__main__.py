@@ -26,7 +26,7 @@ def main():
 
     for i, effect in enumerate(effects):
         print(f"Applying effect {i + 1}/{effect_count} ({effect.__effect_name__})")
-        beats = beats.apply_effect(effect)
+        beats = beats.apply(effect)
 
     print("Rendering song")
     beats.consolidate().export(args.output)

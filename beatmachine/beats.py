@@ -32,7 +32,7 @@ class Beats:
         :param effects: Effects to apply in order.
         :return: A new Beats object with the given effects applied.
         """
-        return reduce(lambda beats, effect: beats.apply(effect), effects)
+        return reduce(lambda beats, effect: beats.apply(effect), effects, self)
 
     def consolidate(self) -> AudioSegment:
         """
