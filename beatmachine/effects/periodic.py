@@ -20,7 +20,10 @@ class PeriodicEffect(BaseEffect, abc.ABC):
 
     def __init__(self, *, period: int = 1, offset: int = 0):
         if period <= 0:
-            raise ValueError(f"Effect period must be >= 0, but was {period}")
+            raise ValueError(f"Effect period must be > 0, but was {period}")
+
+        if offset < 0:
+            raise ValueError(f"Offset must be >= 0, but was {offset}")
 
         self.period = period
         self.offset = offset

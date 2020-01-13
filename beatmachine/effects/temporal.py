@@ -41,7 +41,7 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
 
     __effect_name__ = "swap"
 
-    def __init__(self, *, x_period: int = 2, y_period: int = 4, group_size: int = 4):
+    def __init__(self, *, x_period: int = 2, y_period: int = 4, group_size: int = 4, offset: int = 0):
         if x_period < 1 or y_period < 1:
             raise ValueError(
                 f"`swap` effect must have `x_period` and `y_period` both >= 1, "
@@ -54,11 +54,20 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
                 f"but both were {x_period}"
             )
 
+        if offset < 0:
+            raise ValueError(f"Offset must be >= 0, but was {offset}")
+
         self.low_period = (min(x_period, y_period) - 1) % group_size + 1
         self.high_period = (max(x_period, y_period) - 1) % group_size + 1
         self.group_size = group_size
+        self.offset = offset
 
     def __call__(self, beats):
+        beats = iter(beats)
+        
+        for _ in range(self.offset):
+            yield next(beats)
+
         for group in _chunks(beats, self.group_size):
             if len(group) >= self.high_period:
                 (group[self.low_period - 1], group[self.high_period - 1]) = (
