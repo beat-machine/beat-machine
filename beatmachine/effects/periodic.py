@@ -41,6 +41,7 @@ class PeriodicEffect(BaseEffect, abc.ABC):
             if i < self.offset:
                 yield beat
             else:
+                i -= self.offset
                 result = self.process_beat(beat) if (i - 1) % self.period == 0 else beat
                 if result is not None:
                     yield result
@@ -61,7 +62,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent,
         *,
         period: int = 1,
-        offset: int = 0
+        offset: int = 0,
     ):
         super().__init__(period=period, offset=offset)
         self.silence_producer = silence_producer
@@ -99,7 +100,14 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     __effect_name__ = "cut"
 
-    def __init__(self, *, period: int = 1, denominator: int = 2, take_index: int = 0, offset: int = 0):
+    def __init__(
+        self,
+        *,
+        period: int = 1,
+        denominator: int = 2,
+        take_index: int = 0,
+        offset: int = 0,
+    ):
         super().__init__(period=period, offset=offset)
         self.denominator = denominator
         self.take_index = take_index

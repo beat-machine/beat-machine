@@ -14,7 +14,7 @@ class Beats:
     def __init__(self, beats: List[AudioSegment]):
         self._beats = beats
 
-    def apply(self, effect: effects.base.BaseEffect) -> 'Beats':
+    def apply(self, effect: effects.base.BaseEffect) -> "Beats":
         """
         Applies a single effect and returns a new Beats object.
 
@@ -23,7 +23,7 @@ class Beats:
         """
         return Beats(effect(self._beats))
 
-    def apply_all(self, *effects: List[effects.base.BaseEffect]) -> 'Beats':
+    def apply_all(self, *effects: List[effects.base.BaseEffect]) -> "Beats":
         """
         Applies a list of effects and returns a new Beats object.
 
@@ -46,7 +46,7 @@ class Beats:
         loader: Callable[
             [BinaryIO], Generator[AudioSegment, None, None]
         ] = loader.load_beats_by_signal,
-    ) -> 'Beats':
+    ) -> "Beats":
         """
         Loads a song as a Beats object.
 
