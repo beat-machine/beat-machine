@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from . import loader, effects
 from typing import List, Callable, BinaryIO, Generator, Union
 from pydub import AudioSegment
@@ -16,7 +14,7 @@ class Beats:
     def __init__(self, beats: List[AudioSegment]):
         self._beats = beats
 
-    def apply(self, effect: effects.base.BaseEffect) -> Beats:
+    def apply(self, effect: effects.base.BaseEffect) -> "Beats":
         """
         Applies a single effect and returns a new Beats object.
 
@@ -25,14 +23,14 @@ class Beats:
         """
         return Beats(effect(self._beats))
 
-    def apply_all(self, *effects: List[effects.base.BaseEffect]) -> Beats:
+    def apply_all(self, *effects: List[effects.base.BaseEffect]) -> "Beats":
         """
         Applies a list of effects and returns a new Beats object.
 
         :param effects: Effects to apply in order.
         :return: A new Beats object with the given effects applied.
         """
-        return reduce(lambda beats, effect: beats.apply(effect), effects)
+        return reduce(lambda beats, effect: beats.apply(effect), effects, self)
 
     def consolidate(self) -> AudioSegment:
         """
@@ -48,7 +46,7 @@ class Beats:
         loader: Callable[
             [BinaryIO], Generator[AudioSegment, None, None]
         ] = loader.load_beats_by_signal,
-    ) -> Beats:
+    ) -> "Beats":
         """
         Loads a song as a Beats object.
 

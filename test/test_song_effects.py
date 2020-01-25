@@ -61,6 +61,10 @@ class TestSongEffects(unittest.TestCase):
         )
         self.assertEqual(result, list(effect(song)))
 
+    def test_swap_beats_offset(self):
+        effect = SwapBeats(x_period=2, y_period=4, group_size=4, offset=1)
+        self.assertEqual([0, 1, 4, 3, 2], list(effect([0, 1, 2, 3, 4])))
+
     @parameterized.expand(
         [
             (
