@@ -4,15 +4,14 @@ every other beat.
 """
 
 import abc
-from typing import Callable, Optional
+from typing import Callable, Optional, List, Generator
 
-import deprecation
-from pydub import AudioSegment
+import numpy as np
 
-from beatmachine.effects.base import BaseEffect, EffectABCMeta
+from beatmachine.effects.base import LoadableEffect, EffectABCMeta
 
 
-class PeriodicEffect(BaseEffect, abc.ABC):
+class PeriodicEffect(LoadableEffect, abc.ABC):
     """
     A PeriodicEffect is an effect that gets applied to beats at a fixed interval, i.e. every other beat. A
     PeriodicEffect with a period of 1 gets applied to every single beat.
@@ -28,7 +27,7 @@ class PeriodicEffect(BaseEffect, abc.ABC):
         self.period = period
         self.offset = offset
 
-    def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
+    def process_beat(self, beat: np.ndarray) -> Optional[np.ndarray]:
         """
         Processes a single beat.
         :param beat: Beat to process.
@@ -36,7 +35,7 @@ class PeriodicEffect(BaseEffect, abc.ABC):
         """
         raise NotImplementedError
 
-    def __call__(self, beats):
+    def __call__(self, beats: List[np.ndarray]) -> Generator[np.ndarray, None, None]:
         for i, beat in enumerate(beats):
             if i < self.offset:
                 yield beat
@@ -46,7 +45,7 @@ class PeriodicEffect(BaseEffect, abc.ABC):
                 if result is not None:
                     yield result
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return isinstance(other, self.__class__) and self.period == other.period
 
 
@@ -59,7 +58,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     def __init__(
         self,
-        silence_producer: Callable[[int], AudioSegment] = AudioSegment.silent,
+        silence_producer: Callable[[int], np.ndarray] = np.zeros,
         *,
         period: int = 1,
         offset: int = 0,
@@ -67,10 +66,10 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         super().__init__(period=period, offset=offset)
         self.silence_producer = silence_producer
 
-    def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
+    def process_beat(self, beat: np.ndarray) -> np.ndarray:
         return self.silence_producer(len(beat))
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return (
             super(SilenceEveryNth, self).__eq__(other)
             and self.silence_producer == other.silence_producer
@@ -89,7 +88,7 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
             raise ValueError(f"`remove` effect period must be >= 2, but was {period}")
         super().__init__(period=period, offset=offset)
 
-    def process_beat(self, beat: AudioSegment) -> Optional[AudioSegment]:
+    def process_beat(self, beat: np.ndarray) -> Optional[np.ndarray]:
         return None
 
 
@@ -112,10 +111,10 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         self.denominator = denominator
         self.take_index = take_index
 
-    def process_beat(self, beat_audio):
-        size = len(beat_audio) // self.denominator
+    def process_beat(self, beat: np.ndarray) -> np.ndarray:
+        size = len(beat) // self.denominator
         offset = self.take_index * size
-        return beat_audio[offset : offset + size]
+        return beat[offset : offset + size]
 
     def __eq__(self, other):
         return (
@@ -126,14 +125,6 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         )
 
 
-@deprecation.deprecated(
-    deprecated_in="2.1.0",
-    details="Succeeded by CutEveryNth, whose defaults have the same behavior as CutEveryNthInHalf.",
-)
-class CutEveryNthInHalf(CutEveryNth):
-    __effect_name__ = "_cut_old"
-
-
 class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that reverses beats.
@@ -141,8 +132,8 @@ class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     __effect_name__ = "reverse"
 
-    def process_beat(self, beat_audio):
-        return beat_audio.reverse()
+    def process_beat(self, beat: np.ndarray) -> np.ndarray:
+        return np.flip(beat)
 
 
 class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
@@ -161,8 +152,8 @@ class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
         self.times = times
 
-    def process_beat(self, beat_audio):
-        return beat_audio * self.times
+    def process_beat(self, beat: np.ndarray) -> np.ndarray:
+        return np.tile(beat, self.times)
 
     def __eq__(self, other):
         return super(RepeatEveryNth, self).__eq__(other) and self.times == other.times

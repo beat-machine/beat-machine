@@ -1,12 +1,13 @@
+import argparse
 import json
 import os
 
 import beatmachine as bm
-import argparse
 
 
 def main():
     parser = argparse.ArgumentParser(prog="beatmachine")
+    parser.add_argument('--version', '-v', action='version', version=bm.__version__)
     parser.add_argument("--input", "-i", help="Input MP3 file", required=True)
     parser.add_argument("--effects", "-e", help="JSON effects to apply", required=True)
     parser.add_argument("--output", "-o", help="Output MP3 file", required=True)
@@ -29,7 +30,7 @@ def main():
         beats = beats.apply(effect)
 
     print("Rendering song")
-    beats.consolidate().export(args.output)
+    beats.save(args.output)
     print("Wrote output to", args.output)
 
 

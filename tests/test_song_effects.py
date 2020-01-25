@@ -2,6 +2,7 @@ import random
 import unittest
 from unittest.mock import patch
 
+import numpy as np
 from parameterized import parameterized
 
 from beatmachine.effects.temporal import RandomizeAllBeats, SwapBeats, RemapBeats
@@ -9,7 +10,7 @@ from beatmachine.effects.temporal import RandomizeAllBeats, SwapBeats, RemapBeat
 
 class TestSongEffects(unittest.TestCase):
     def setUp(self):
-        self.dummy_song = list(range(1, 5))
+        self.dummy_song = list(np.ndarray([i]) for i in range(1, 5))
 
     def test_randomize_all(self):
         seed = random.seed
@@ -29,7 +30,16 @@ class TestSongEffects(unittest.TestCase):
                 "Beats 2 and 4",
                 (2, 4),
                 4,
-                [1, 2, 3, 4, 5, 6, 7, 8],
+                [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                ],  # TODO: OK for now, but these should be arrays inside, not just ints
                 [1, 4, 3, 2, 5, 8, 7, 6],
             ),
             (
