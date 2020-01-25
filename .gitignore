@@ -35,7 +35,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit tests / coverage reports
+# Unit test / coverage reports
 htmlcov/
 .tox/
 .coverage
@@ -111,7 +111,7 @@ venv.bak/
 .idea/
 .vscode/
 
-# Audio files used in unit tests
+# Audio files used in unit test
 !tests/resources/*.mp3
 
 # Auto-generated setup.py
