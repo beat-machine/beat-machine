@@ -6,12 +6,12 @@ from typing import BinaryIO, Union, Generator, Callable, Iterable, Tuple
 import numpy as np
 from madmom.audio import Signal
 
-BeatLoader = Callable[[Union[str, BinaryIO]], Tuple[int, Iterable[np.ndarray]]]
+BeatLoader = Callable[[Union[str, BinaryIO]], Tuple[int, int, Iterable[np.ndarray]]]
 
 
 def load_beats_by_signal(
     fp: Union[str, BinaryIO], min_bpm: int = 60, max_bpm: int = 300, fps: int = 100
-) -> Tuple[int, Generator[np.ndarray, None, None]]:
+) -> Tuple[int, int, Generator[np.ndarray, None, None]]:
     """
     A generator that loads beats based on audio data itself, handling variations in tempo.
     This is a long, blocking, memory-intensive process! Setting ``online_mode`` to True may improve performance.
@@ -39,12 +39,12 @@ def load_beats_by_signal(
             yield sig[last_x:x, ...]
             last_x = x
 
-    return sig.sample_rate, generator()
+    return sig.sample_rate, sig.num_channels, generator()
 
 
 def load_beats_by_bpm(
     fp: Union[str, BinaryIO], bpm: int
-) -> Tuple[int, Generator[np.ndarray, None, None]]:
+) -> Tuple[int, int, Generator[np.ndarray, None, None]]:
     """
     A generator that loads beats strictly by a given BPM assuming no fluctuations in tempo. Significantly faster than
     `load_beats_by_signal` but far less accurate, especially in live performances.
@@ -60,4 +60,4 @@ def load_beats_by_bpm(
         for x in range(0, len(sig), samples_per_beat):
             yield sig[x + samples_per_beat, ...]
 
-    return sig.sample_rate, generator()
+    return sig.sample_rate, sig.num_channels, generator()
