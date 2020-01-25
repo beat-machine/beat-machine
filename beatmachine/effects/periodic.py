@@ -69,7 +69,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     def process_beat(self, beat: np.ndarray) -> np.ndarray:
         return self.silence_producer(len(beat))
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other):
         return (
             super(SilenceEveryNth, self).__eq__(other)
             and self.silence_producer == other.silence_producer
@@ -114,7 +114,7 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     def process_beat(self, beat: np.ndarray) -> np.ndarray:
         size = len(beat) // self.denominator
         offset = self.take_index * size
-        return beat[offset : offset + size]
+        return beat[offset : offset + size, ...]
 
     def __eq__(self, other):
         return (

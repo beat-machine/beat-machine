@@ -40,26 +40,30 @@ class Beats:
 
     def to_ndarray(self) -> np.ndarray:
         """
-        Consolidates this Beats object into an array.
+        Consolidates this Beats object into an array with shape (samples, channels).
 
         :return: A PyDub AudioSegment formed from this Beats object.
         """
-        return np.concatenate(list(self._beats))
+        return np.concatenate(list(self._beats), axis=0)
 
     def save(self, filename: str, extra_ffmpeg_args: List[str] = None):
         extra_ffmpeg_args = extra_ffmpeg_args or []
         p = subprocess.Popen(
             [
                 'ffmpeg',
+                "-hide_banner",
+                # "-loglevel", "panic",
                 '-y',
-                '-f', 'wav',
+                '-f', 's16le',
+                '-ar', str(self._sr),
+                '-ac', '2',
                 '-i', '-',
                 *extra_ffmpeg_args,
-                filename
+                filename,
             ], stdin=subprocess.PIPE
         )
 
-        soundfile.write(p.stdin, self.to_ndarray(), samplerate=self._sr, format='wav')
+        soundfile.write(p.stdin, self.to_ndarray(), samplerate=self._sr, format='RAW', subtype='PCM_16')
         p.stdin.close()
         p.wait()
 

@@ -1,22 +1,12 @@
 """
 The ``loader`` module contains functions for loading beats from song files.
 """
-import tempfile
 from typing import BinaryIO, Union, Generator, Callable, Iterable, Tuple
 
-import librosa
 import numpy as np
+from madmom.audio import Signal
 
 BeatLoader = Callable[[Union[str, BinaryIO]], Tuple[int, Iterable[np.ndarray]]]
-
-
-def _load_fp_or_path(fp_or_path: Union[str, BinaryIO]) -> Tuple[int, np.ndarray]:
-    if type(fp_or_path) is str:
-        return librosa.load(fp_or_path)
-
-    with tempfile.NamedTemporaryFile() as fp:
-        fp.write(fp_or_path)
-        return librosa.load(fp.name)
 
 
 def load_beats_by_signal(
@@ -34,22 +24,22 @@ def load_beats_by_signal(
     """
 
     # Hefty imports! Let's wait until we use them.
-    from madmom.audio import Signal
     from madmom.features import DBNBeatTrackingProcessor, RNNBeatProcessor
 
-    y, sr = librosa.load(fp)
+    sig = Signal(fp)
+
     tracker = DBNBeatTrackingProcessor(min_bpm=min_bpm, max_bpm=max_bpm, fps=fps)
     processor = RNNBeatProcessor()
-    times = tracker(processor(Signal(y, sample_rate=sr))) * sr
+    times = tracker(processor(sig)) * sig.sample_rate
 
     def generator():
         last_x = 0
         for i, x in np.ndenumerate(times):
             x = int(x)
-            yield y[last_x:x]
+            yield sig[last_x:x, ...]
             last_x = x
 
-    return sr, generator()
+    return sig.sample_rate, generator()
 
 
 def load_beats_by_bpm(
@@ -63,11 +53,11 @@ def load_beats_by_bpm(
     :param bpm: Song BPM. This can sometimes be found online.
     :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
     """
-    y, sr = librosa.load(fp)
-    samples_per_beat = (60 * sr) // bpm
+    sig = Signal(fp)
+    samples_per_beat = (60 * sig.sample_rate) // bpm
 
     def generator():
-        for x in range(0, len(y), samples_per_beat):
-            yield y[x + samples_per_beat]
+        for x in range(0, len(sig), samples_per_beat):
+            yield sig[x + samples_per_beat, ...]
 
-    return sr, generator()
+    return sig.sample_rate, generator()
