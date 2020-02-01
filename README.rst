@@ -1,7 +1,7 @@
 beatmachine
 ===========
 
-.. image:: https://github.com/beat-machine/beat-machine/workflows/Python/badge.svg
+.. image:: https://github.com/beat-machine/beat-machine/workflows/Python%20CI/CD/badge.svg
     :alt: GitHub Actions CI
     :target: https://github.com/beat-machine/beat-machine/actions
 
