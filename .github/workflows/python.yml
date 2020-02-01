@@ -23,7 +23,7 @@ jobs:
         poetry run black --check .
     - name: Test with pytest
       run: |
-        poetry run python -m unittest discover test
+        poetry run pytest
 
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
