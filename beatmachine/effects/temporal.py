@@ -6,12 +6,12 @@ import itertools
 import random
 from typing import Iterable, Generator, List, T
 
-from pydub import AudioSegment
+import numpy as np
 
-from beatmachine.effects.base import BaseEffect, EffectABCMeta
+from beatmachine.effects.base import LoadableEffect, EffectABCMeta
 
 
-class RandomizeAllBeats(BaseEffect, metaclass=EffectABCMeta):
+class RandomizeAllBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
     An effect that randomizes the order of every single beat of a song.
     """
@@ -33,7 +33,7 @@ def _chunks(iterable: Iterable[T], size: int = 10) -> Generator[List[T], None, N
         yield list(itertools.chain([first], itertools.islice(iterator, size - 1)))
 
 
-class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
+class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
     SwapBeats swaps every two specified beats. For example, specifying periods 2 and 4 would result in every second and
     fourth beats being swapped.
@@ -69,7 +69,9 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
         self.group_size = group_size
         self.offset = offset
 
-    def __call__(self, beats):
+    def __call__(
+        self, beats: Iterable[np.ndarray]
+    ) -> Generator[np.ndarray, None, None]:
         beats = iter(beats)
 
         for _ in range(self.offset):
@@ -77,10 +79,12 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
 
         for group in _chunks(beats, self.group_size):
             if len(group) >= self.high_period:
+                # Swap low and high beats
                 (group[self.low_period - 1], group[self.high_period - 1]) = (
                     group[self.high_period - 1],
                     group[self.low_period - 1],
                 )
+
             yield from group
 
     def __eq__(self, other):
@@ -90,7 +94,7 @@ class SwapBeats(BaseEffect, metaclass=EffectABCMeta):
         )
 
 
-class RemapBeats(BaseEffect, metaclass=EffectABCMeta):
+class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
     An effect that remaps beats based on a list of target indices. For example, a remap effect with mapping [0, 3, 2, 1]
     behaves identically to a swap effect with periods 2 and 4.
@@ -109,8 +113,8 @@ class RemapBeats(BaseEffect, metaclass=EffectABCMeta):
         self.mapping = mapping
 
     def __call__(
-        self, beats: Iterable[AudioSegment]
-    ) -> Generator[AudioSegment, None, None]:
+        self, beats: Iterable[np.ndarray]
+    ) -> Generator[np.ndarray, None, None]:
         for group in _chunks(beats, len(self.mapping)):
             group_size = len(group)
             remapped_group = []

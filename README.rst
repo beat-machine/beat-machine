@@ -1,7 +1,7 @@
 beatmachine
 ===========
 
-.. image:: https://github.com/beat-machine/beat-machine/workflows/Python/badge.svg
+.. image:: https://github.com/beat-machine/beat-machine/workflows/Python%20CI/CD/badge.svg
     :alt: GitHub Actions CI
     :target: https://github.com/beat-machine/beat-machine/actions
 
@@ -45,12 +45,14 @@ Here's a sample::
 
     import beatmachine as bm
 
-    # This takes a while with the defaults!
     beats = bm.Beats.from_song('in.mp3')
+    beats.apply(bm.effects.RemoveEveryNth(2)).save('out.mp3')
 
-    # The consolidate() method returns a PyDub AudioSegment, which we can use
-    # however we want.
-    beats.apply(bm.effects.RemoveEveryNth(2)).consolidate().export('out.mp3')
+If you want to get more advanced, you can also convert to an ``ndarray`` at
+any point::
 
-    # The Beats class is immutable, so we're free to use it again.
-    beats.apply_all(bm.effects.RemoveEveryNth(2), bm.effects.CutEveryNth()).consolidate().export('out_2.mp3')
+    import beatmachine as bm
+    import numpy as np
+
+    beats = bm.Beats.from_song('in.mp3')
+    y = np.flip(beats.to_ndarray())
