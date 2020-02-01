@@ -14,13 +14,12 @@ def load_beats_by_signal(
 ) -> Tuple[int, int, Generator[np.ndarray, None, None]]:
     """
     A generator that loads beats based on audio data itself, handling variations in tempo.
-    This is a long, blocking, memory-intensive process! Setting ``online_mode`` to True may improve performance.
 
-    :param fp: Path to or file-like object of the audio to load.
+    :param fp: Audio path to or file-like object.
     :param min_bpm: Minimum permissible BPM.
     :param max_bpm: Maximum permissible BPM.
     :param fps: Resolution to process beats at.
-    :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
+    :return: A generator yielding each beat as a numpy array with shape (samples, channels).
     """
 
     # Hefty imports! Let's wait until we use them.
@@ -49,9 +48,9 @@ def load_beats_by_bpm(
     A generator that loads beats strictly by a given BPM assuming no fluctuations in tempo. Significantly faster than
     `load_beats_by_signal` but far less accurate, especially in live performances.
 
-    :param fp: Path to or file-like object of the audio to load.
-    :param bpm: Song BPM. This can sometimes be found online.
-    :return: A generator yielding each beat of the input song as a PyDub AudioSegment.
+    :param fp: Audio path or file-like object.
+    :param bpm: Song BPM.
+    :return: A generator yielding each beat as a numpy array with shape (samples, channels).
     """
     sig = Signal(fp)
     samples_per_beat = (60 * sig.sample_rate) // bpm

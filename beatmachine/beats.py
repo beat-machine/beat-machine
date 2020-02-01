@@ -49,7 +49,7 @@ class Beats:
         """
         Consolidates this Beats object into an array with shape (samples, channels).
 
-        :return: A PyDub AudioSegment formed from this Beats object.
+        :return: An ndarray with shape (samples, channels).
         """
         return np.concatenate(list(self._beats), axis=0)
 
