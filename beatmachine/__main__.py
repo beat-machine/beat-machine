@@ -21,7 +21,7 @@ def main():
 
     effects = [bm.effects.load_from_dict(e) for e in effects_json]
     effect_count = len(effects)
-    filename = os.path.splitext(args.input)
+    filename = os.path.splitext(args.input.lower())
     if os.path.isfile(args.input):
         if filename[1]=='.mp3':
             print("Locating beats (this may take a while)")
