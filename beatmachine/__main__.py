@@ -1,16 +1,25 @@
+import argparse
 import json
 import os
 import sys
 import pickle
 import beatmachine as bm
-import argparse
 
 def main():
     parser = argparse.ArgumentParser(prog="beatmachine")
-    parser.add_argument("--input", "-i", help="Input MP3 or beats file", required=True)
+    parser.add_argument("--version", "-v", action="version", version=bm.__version__)
+    parser.add_argument("--input", "-i", help="Input MP3 file", required=True)
     parser.add_argument("--effects", "-e", help="JSON effects to apply", required=True)
     parser.add_argument("--output", "-o", help="Output MP3 file", required=True)
-    parser.add_argument("--beat", "-b", help="Output beats file (can be used in place of the MP3)", required=False, action='store_true')
+    parser.add_argument("--serialize", "-s", help="Output serialized beats file (can be used in place of MP3)", required=False, action='store_true')
+    parser.add_argument("--bpm", "-b", type=int, help="BPM estimate")
+    parser.add_argument(
+        "--tolerance",
+        "-t",
+        type=int,
+        help="BPM drift tolerance, only used if --bpm is set",
+        default=15,
+    )
     args = parser.parse_args()
 
     if os.path.isfile(args.effects):
@@ -20,18 +29,30 @@ def main():
         effects_json = json.loads(args.effects)
 
     effects = [bm.effects.load_from_dict(e) for e in effects_json]
+
+    loader = bm.loader.load_beats_by_signal
+    filename = os.path.splitext(args.input)
+    if args.bpm is not None:
+        if filename[1].lower()=='.beat':
+            print("BPM already encoded in beat file. If you want to change this, please use the MP3.")
+            sys.exit()
+        else:
+            def loader(f):
+                return bm.loader.load_beats_by_signal(
+                    f, min_bpm=args.bpm - args.tolerance, max_bpm=args.bpm + args.tolerance
+                )
+
     effect_count = len(effects)
-    filename = os.path.splitext(args.input.lower())
     if os.path.isfile(args.input):
-        if filename[1]=='.mp3':
+        if filename[1].lower()=='.mp3':
             print("Locating beats (this may take a while)")
-            beats = bm.Beats.from_song(args.input)
-            if args.beat is True:
+            beats = bm.Beats.from_song(args.input, beat_loader=loader)
+            if args.serialize is True:
                 with open(filename[0]+".beat", "wb") as fp:
                     fp.write(pickle.dumps(beats))
                     fp.close()
                     print("Wrote beats out to "+filename[0]+".beat. Use this instead of the MP3 to speed up processing.")
-        elif filename[1]=='.beat':
+        elif filename[1].lower()=='.beat':
             with open(args.input, "rb") as fp:
                 try:
                     beats = pickle.load(fp)
@@ -52,7 +73,7 @@ def main():
         beats = beats.apply(effect)
 
     print("Rendering song")
-    beats.consolidate().export(args.output)
+    beats.save(args.output)
     print("Wrote output to", args.output)
 
 if __name__ == "__main__":
