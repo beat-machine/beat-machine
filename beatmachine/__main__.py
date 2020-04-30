@@ -8,10 +8,10 @@ import beatmachine as bm
 def main():
     parser = argparse.ArgumentParser(prog="beatmachine")
     parser.add_argument("--version", "-v", action="version", version=bm.__version__)
-    parser.add_argument("--input", "-i", help="Input MP3 file", required=True)
+    parser.add_argument("--input", "-i", help="Input MP3 or Beat file", required=True)
     parser.add_argument("--effects", "-e", help="JSON effects to apply", required=True)
     parser.add_argument("--output", "-o", help="Output MP3 file", required=True)
-    parser.add_argument("--serialize", "-s", help="Output serialized beats file (can be used in place of MP3)", required=False, action='store_true')
+    parser.add_argument("--serialize", "-s", help="Output serialized beat file (can be used in place of MP3)", required=False, action='store_true')
     parser.add_argument("--bpm", "-b", type=int, help="BPM estimate")
     parser.add_argument(
         "--tolerance",
