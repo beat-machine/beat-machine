@@ -110,4 +110,4 @@ class Beats:
         :param beat_loader: Callable to load and split the given path/file-like object into beats.
         """
         sr, channels, beats = beat_loader(path_or_fp)
-        return Beats(sr, beats)
+        return Beats(sr, channels, list(beats))
