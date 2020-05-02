@@ -3,7 +3,6 @@ from functools import reduce
 from typing import List, BinaryIO, Union
 
 import numpy as np
-import soundfile
 
 from . import loader, effects
 
@@ -72,15 +71,7 @@ class Beats:
             ],
             stdin=subprocess.PIPE,
         )
-
-        soundfile.write(
-            p.stdin,
-            self.to_ndarray(),
-            samplerate=self._sr,
-            format="RAW",
-            subtype="PCM_16",
-        )
-
+        p.communicate(input=self.to_ndarray().tobytes())
         p.stdin.close()
         p.wait()
 
