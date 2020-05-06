@@ -105,6 +105,7 @@ venv.bak/
 
 # Extraneous files used in testing
 *.mp3
+*.beat
 *.json
 
 # IDE files
