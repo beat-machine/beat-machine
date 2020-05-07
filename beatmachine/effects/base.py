@@ -4,9 +4,11 @@ deserialization of effects.
 """
 
 import abc
-from typing import Generator, Iterable
+from typing import Callable, Iterable
 
-from pydub import AudioSegment
+import numpy as np
+
+Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
 
 
 class EffectRegistry(type):
@@ -20,7 +22,7 @@ class EffectRegistry(type):
         cls = type.__new__(mcs, name, bases, class_dict)
         try:
             if name not in mcs.effects:
-                mcs.effects[cls.__effect_name__] = cls
+                mcs.effects[getattr(cls, "__effect_name__")] = cls
         except AttributeError as e:
             raise AttributeError(
                 "Attempted to register an effect class without an __effect_name__ attribute"
@@ -28,7 +30,7 @@ class EffectRegistry(type):
         return cls
 
     @staticmethod
-    def load_effect_from_dict(effect: dict) -> "BaseEffect":
+    def load_effect_from_dict(effect: dict) -> "LoadableEffect":
         """
         Loads an effect based on a key-value definition. This is represented as a Python dictionary but could be loaded
         from anywhere, i.e. JSON data.
@@ -64,9 +66,9 @@ class EffectABCMeta(EffectRegistry, abc.ABCMeta):
     pass
 
 
-class BaseEffect(abc.ABC):
+class LoadableEffect(abc.ABC):
     """
-    BaseEffect is an abstract base for a valid effect loadable by the EffectRegistry.
+    LoadableEffect is an abstract base for a valid effect loadable by the EffectRegistry.
     """
 
     __abstract__ = True
@@ -80,9 +82,7 @@ class BaseEffect(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def __call__(
-        self, beats: Iterable[AudioSegment]
-    ) -> Generator[AudioSegment, None, None]:
+    def __call__(self, beats: Iterable[np.ndarray]) -> Iterable[np.ndarray]:
         """
         Applies this effect to a given list of beats.
 

@@ -105,13 +105,14 @@ venv.bak/
 
 # Extraneous files used in testing
 *.mp3
+*.beat
 *.json
 
 # IDE files
 .idea/
 .vscode/
 
-# Audio files used in unit tests
+# Audio files used in unit test
 !tests/resources/*.mp3
 
 # Auto-generated setup.py
