@@ -38,7 +38,7 @@ jobs:
     - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install dephell
+        pip install appdirs dephell
         dephell build
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@master
