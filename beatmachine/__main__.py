@@ -10,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser(prog="beatmachine")
     parser.add_argument("--version", "-v", action="version", version=bm.__version__)
     parser.add_argument("--input", "-i", help="Input MP3 or Beat file", required=True)
-    parser.add_argument("--effects", "-e", help="JSON effects to apply", required=True)
+    parser.add_argument("--effects", "-e", help="JSON effects to apply", default='[]')
     parser.add_argument("--output", "-o", help="Output MP3 file", required=True)
     parser.add_argument(
         "--serialize",
