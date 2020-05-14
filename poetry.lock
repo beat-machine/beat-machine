@@ -242,6 +242,7 @@ scipy = ">=0.16"
 reference = "805c08e69b4390ce763c098474b2f96fab47bf60"
 type = "git"
 url = "https://github.com/CPJKU/madmom.git"
+
 [[package]]
 category = "dev"
 description = "Safely add untrusted strings to HTML/XML markup."
