@@ -1,6 +1,6 @@
 import subprocess
 from functools import reduce
-from typing import List, BinaryIO, Union
+from typing import List, BinaryIO, Union, overload
 
 import numpy as np
 
@@ -52,28 +52,65 @@ class Beats:
         """
         return np.concatenate(list(self._beats), axis=0)
 
-    def save(self, filename: str, extra_ffmpeg_args: List[str] = None):
-        extra_ffmpeg_args = extra_ffmpeg_args or []
+    def _create_ffmpeg_command(
+        self, dst: str, out_format: str = None, extra_args: List[str] = None
+    ):
+        cmd = [
+            # fmt: off
+            "ffmpeg",
+            "-hide_banner",
+            "-loglevel", "panic",
+            "-y",
+            "-f", "s16le",
+            "-ar", str(self._sr),
+            "-ac", str(self._channels),
+            "-i", "-",
+            # fmt: on
+        ]
+
+        if out_format is not None:
+            cmd.extend(["-f", out_format])
+
+        if extra_args is not None:
+            cmd.extend(extra_args)
+
+        cmd.append(dst)
+        return cmd
+
+    def _save_to_file(
+        self, filename: str, out_format: str = None, extra_ffmpeg_args: List[str] = None
+    ):
         p = subprocess.Popen(
-            [
-                # fmt: off
-                "ffmpeg",
-                "-hide_banner",
-                "-loglevel", "panic",
-                "-y",
-                "-f", "s16le",
-                "-ar", str(self._sr),
-                "-ac", str(self._channels),
-                "-i", "-",
-                *extra_ffmpeg_args,
-                filename,
-                # fmt: on
-            ],
+            self._create_ffmpeg_command(filename, out_format, extra_ffmpeg_args),
             stdin=subprocess.PIPE,
         )
         p.communicate(input=self.to_ndarray().tobytes())
         p.stdin.close()
         p.wait()
+
+    def _save_to_binary_io(
+        self, fp: BinaryIO, out_format: str = None, extra_ffmpeg_args: List[str] = None
+    ):
+        if not out_format:
+            raise ValueError("out_format is required when writing to file-like object")
+
+        p = subprocess.Popen(
+            self._create_ffmpeg_command("pipe:", out_format, extra_ffmpeg_args),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+
+        stdout, _ = p.communicate(input=self.to_ndarray().tobytes())
+        p.stdin.close()
+        p.wait()
+
+        return fp.write(stdout)
+
+    def save(self, fp, out_format=None, extra_ffmpeg_args: List[str] = None):
+        if isinstance(fp, str):
+            return self._save_to_file(fp, out_format, extra_ffmpeg_args)
+        else:
+            return self._save_to_binary_io(fp, out_format, extra_ffmpeg_args)
 
     @property
     def sr(self):

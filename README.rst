@@ -1,12 +1,12 @@
 beatmachine
 ===========
 
-.. image:: https://github.com/beat-machine/beat-machine/workflows/Python%20CI/CD/badge.svg
-    :alt: GitHub Actions CI
+.. image:: https://github.com/beat-machine/beat-machine/workflows/Build/badge.svg
+    :alt: Build Status
     :target: https://github.com/beat-machine/beat-machine/actions
 
 .. image:: https://img.shields.io/pypi/v/beatmachine
-    :alt: PyPI
+    :alt: PyPI Version
     :target: https://pypi.org/project/beatmachine/
 
 .. image:: https://readthedocs.org/projects/beatmachine/badge/?version=latest
