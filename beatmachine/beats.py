@@ -108,13 +108,9 @@ class Beats:
 
     def save(self, fp, out_format=None, extra_ffmpeg_args: List[str] = None):
         if isinstance(fp, str):
-            return self._save_to_file(
-                fp, out_format, extra_ffmpeg_args
-            )
+            return self._save_to_file(fp, out_format, extra_ffmpeg_args)
         else:
-            return self._save_to_binary_io(
-                fp, out_format, extra_ffmpeg_args
-            )
+            return self._save_to_binary_io(fp, out_format, extra_ffmpeg_args)
 
     @property
     def sr(self):
