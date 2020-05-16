@@ -4,7 +4,7 @@ to = {format = "setuppy", path = "setup.py"}
 
 [tool.poetry]
 name = "beatmachine"
-version = "3.1.0"
+version = "3.1.1"
 description = "A library for procedurally remixing songs"
 authors = ["dhsavell <dhsavell05@gmail.com>"]
 license = "MIT"
