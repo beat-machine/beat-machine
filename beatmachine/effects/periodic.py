@@ -153,7 +153,7 @@ class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         self.times = times
 
     def process_beat(self, beat: np.ndarray) -> np.ndarray:
-        return np.tile(beat, self.times)
+        return np.tile(beat, (self.times, 1))
 
     def __eq__(self, other):
         return super(RepeatEveryNth, self).__eq__(other) and self.times == other.times
