@@ -58,7 +58,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     def __init__(
         self,
-        silence_producer: Callable[[int], np.ndarray] = np.zeros,
+        silence_producer: Callable[[tuple], np.ndarray] = np.zeros,
         *,
         period: int = 1,
         offset: int = 0,
@@ -67,7 +67,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         self.silence_producer = silence_producer
 
     def process_beat(self, beat: np.ndarray) -> np.ndarray:
-        return self.silence_producer(len(beat))
+        return self.silence_producer(np.shape(beat))
 
     def __eq__(self, other):
         return (
