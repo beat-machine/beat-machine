@@ -56,16 +56,11 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     __effect_name__ = "silence"
 
-    def __init__(
-        self,
-        *,
-        period: int = 1,
-        offset: int = 0,
-    ):
+    def __init__(self, *, period: int = 1, offset: int = 0):
         super().__init__(period=period, offset=offset)
 
     def process_beat(self, beat: np.ndarray) -> np.ndarray:
-        return np.zeros(np.shape(beat), dtype='int16')
+        return np.zeros(np.shape(beat), dtype="int16")
 
     def __eq__(self, other):
         return (
