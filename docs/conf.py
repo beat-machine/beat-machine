@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "beatmachine"
-copyright = "2019, dhsavell"
+copyright = "2018-2020, dhsavell"
 author = "dhsavell"
 master_doc = "index"
 
 # The full version, including alpha/beta/rc tags
-release = "2.2.0-alpha.1"
+release = "3.1.5"
 
 # -- General configuration ---------------------------------------------------
 
