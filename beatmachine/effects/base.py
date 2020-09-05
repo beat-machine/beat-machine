@@ -14,6 +14,8 @@ Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
 class EffectRegistry(type):
     """
     The EffectRegistry is a metaclass that serves to track all loadable effects.
+
+    :exclude-members: effects
     """
 
     effects = {}

@@ -1,6 +1,11 @@
 beatmachine package
 ===================
 
+.. automodule:: beatmachine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
@@ -11,27 +16,7 @@ Subpackages
 Submodules
 ----------
 
-beatmachine.beats module
-------------------------
+.. toctree::
 
-.. automodule:: beatmachine.beats
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beatmachine.loader module
--------------------------
-
-.. automodule:: beatmachine.loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: beatmachine
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   beatmachine.beats
+   beatmachine.loader

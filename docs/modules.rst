@@ -1,5 +1,5 @@
-beatmachine
-===========
+beat-machine
+============
 
 .. toctree::
    :maxdepth: 4
