@@ -13,7 +13,7 @@ from beatmachine.effects.base import LoadableEffect, EffectABCMeta
 
 class RandomizeAllBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
-    An effect that randomizes the order of every single beat of a song.
+    Completely randomize the order of every single beat.
     """
 
     __effect_name__ = "randomize"
@@ -36,21 +36,41 @@ def _chunks(iterable: Iterable[T], size: int = 10) -> Generator[List[T], None, N
 
 class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
-    SwapBeats swaps every two specified beats. For example, specifying periods 2 and 4 would result in every second and
-    fourth beats being swapped.
+    Swap two beats, indicated by X and Y, every set number of beats.
+    For example, X = 2 Y = 4, Group = 4 results in a "beats 2 and 4 are swapped" effect. Periods cannot be equal.
     """
 
     __effect_name__ = "swap"
     __effect_schema__ = {
-        "x_period": {"type": "number", "minimum": 1, "default": 2},
+        "x_period": {
+            "type": "number",
+            "minimum": 1,
+            "default": 2,
+            "title": "X",
+            "description": "First beat to swap, starting at 1.",
+        },
         "y_period": {
             "type": "number",
             "minimum": 1,
             "default": 4,
             "not": {"$data": "1/x_period"},
+            "title": "Y",
+            "description": "Second beat to swap, starting at 1 and not equal to X.",
         },
-        "group_size": {"type": "number", "minimum": 1, "default": 1},
-        "offset": {"type": "number", "minimum": 0, "default": 0},
+        "group_size": {
+            "type": "number",
+            "minimum": 1,
+            "default": 1,
+            "title": "Group",
+            "description": "Beats per measure, or how many beats to wait before swapping again.",
+        },
+        "offset": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset",
+            "description": "How many beats to wait before the first swap.",
+        },
     }
 
     def __init__(
@@ -104,10 +124,19 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
     An effect that remaps beats based on a list of target indices. For example, a remap effect with mapping [0, 3, 2, 1]
     behaves identically to a swap effect with periods 2 and 4.
+
+    Most effects can be emulated through Remap.
     """
 
     __effect_name__ = "remap"
-    __effect_schema__ = {"mapping": {"type": "array", "items": {"type": "number"}}}
+    __effect_schema__ = {
+        "mapping": {
+            "type": "array",
+            "items": {"type": "number"},
+            "title": "Mapping",
+            "description": "New order of beats, starting at 0. For example, the mapping [0, 3, 2, 1] swaps beats 2 and 4 every 4 beats. The mapping [0, 1, 1, 1] replaces beats 3 and 4 with beat 2.",
+        }
+    }
 
     def __init__(self, *, mapping: List[int]):
         if any(m < 0 or m >= len(mapping) for m in mapping):

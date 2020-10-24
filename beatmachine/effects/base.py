@@ -4,11 +4,14 @@ deserialization of effects.
 """
 
 import abc
+import re
+
 from typing import Callable, Iterable
 
 import numpy as np
 from jsonschema import validate
 from deprecation import deprecated
+from inspect import getdoc
 
 Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
 
@@ -50,16 +53,18 @@ class EffectRegistry(type):
                 {
                     "type": "object",
                     "properties": properties,
-                    "title": e,
+                    "title": e.capitalize(),
+                    "description": re.sub(
+                        "\\s+", " ", getdoc(EffectRegistry.effects[e])
+                    ),
                     "required": list(properties.keys()),
                     "additionalProperties": False,
                 }
             )
 
-        schema = {"anyOf": any_of}
+        schema = {"title": "Effect", "anyOf": any_of}
         if root:
             schema["$schema"] = "http://json-schema.org/draft-07/schema#"
-            schema["title"] = "TBM Single Effect"
 
         return schema
 
@@ -69,10 +74,13 @@ class EffectRegistry(type):
         Dumps a Draft 7 JSON schema describing a valid effect chain.
         """
 
-        schema = {"type": "array", "items": EffectRegistry.dump_schema()}
+        schema = {
+            "title": "Effect Chain",
+            "type": "array",
+            "items": EffectRegistry.dump_schema(),
+        }
         if root:
             schema["$schema"] = "http://json-schema.org/draft-07/schema#"
-            schema["title"] = "TBM Effect Chain"
 
         return schema
 
