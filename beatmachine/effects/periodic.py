@@ -4,7 +4,7 @@ every other beat.
 """
 
 import abc
-from typing import Callable, Optional, List, Generator
+from typing import Optional, List, Generator
 
 import numpy as np
 
@@ -16,6 +16,11 @@ class PeriodicEffect(LoadableEffect, abc.ABC):
     A PeriodicEffect is an effect that gets applied to beats at a fixed interval, i.e. every other beat. A
     PeriodicEffect with a period of 1 gets applied to every single beat.
     """
+
+    __effect_schema__ = {
+        "period": {"type": "integer", "minimum": 1, "default": 1},
+        "offset": {"type": "integer", "minimum": 0, "default": 0},
+    }
 
     def __init__(self, *, period: int = 1, offset: int = 0):
         if period <= 0:
@@ -30,6 +35,7 @@ class PeriodicEffect(LoadableEffect, abc.ABC):
     def process_beat(self, beat: np.ndarray) -> Optional[np.ndarray]:
         """
         Processes a single beat.
+
         :param beat: Beat to process.
         :return: Updated beat or None if it should be removed.
         """
@@ -63,10 +69,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         return np.zeros(np.shape(beat), dtype="int16")
 
     def __eq__(self, other):
-        return (
-            super(SilenceEveryNth, self).__eq__(other)
-            and self.silence_producer == other.silence_producer
-        )
+        return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
 
 
 class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
@@ -75,6 +78,10 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
 
     __effect_name__ = "remove"
+    __effect_schema__ = {
+        "period": {"type": "integer", "minimum": 2, "default": 2},
+        "offset": {"type": "integer", "minimum": 0, "default": 0},
+    }
 
     def __init__(self, *, period: int = 2, offset: int = 0):
         if period < 2:
@@ -87,19 +94,17 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
 class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
-    A periodic effect that cuts beats in half.
+    A periodic effect that cuts beats into pieces.
     """
 
     __effect_name__ = "cut"
+    __effect_schema__ = {
+        **PeriodicEffect.__effect_schema__,
+        "denominator": {"type": "integer", "minimum": 2, "default": 2},
+        "take_index": {"type": "integer", "minimum": 0, "exclusiveMaximum": {"$data": "1/denominator"}, "default": 0},
+    }
 
-    def __init__(
-        self,
-        *,
-        period: int = 1,
-        denominator: int = 2,
-        take_index: int = 0,
-        offset: int = 0,
-    ):
+    def __init__(self, *, period: int = 1, denominator: int = 2, take_index: int = 0, offset: int = 0):
         super().__init__(period=period, offset=offset)
         self.denominator = denominator
         self.take_index = take_index
@@ -135,12 +140,14 @@ class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
 
     __effect_name__ = "repeat"
+    __effect_schema__ = {
+        **PeriodicEffect.__effect_schema__,
+        "times": {"type": "number", "minimum": 2, "default": 2}
+    }
 
     def __init__(self, *, period: int = 1, offset: int = 0, times: int = 2):
         if times < 2:
-            raise ValueError(
-                f"Repeat effect must have `times` >= 2, but instead got {times}"
-            )
+            raise ValueError(f"Repeat effect must have `times` >= 2, but instead got {times}")
         super().__init__(period=period, offset=offset)
 
         self.times = times

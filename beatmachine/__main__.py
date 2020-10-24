@@ -3,31 +3,33 @@ import json
 import os
 import sys
 import pickle
+from jsonschema import validate
+
 import beatmachine as bm
+from beatmachine.effects.base import EffectRegistry
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="beatmachine")
-    parser.add_argument("--version", "-v", action="version", version=bm.__version__)
-    parser.add_argument("--input", "-i", help="Input MP3 or Beat file", required=True)
-    parser.add_argument("--effects", "-e", help="JSON effects to apply", default="[]")
-    parser.add_argument("--output", "-o", help="Output MP3 file", required=True)
-    parser.add_argument(
+    p = argparse.ArgumentParser(prog="beatmachine")
+    p.add_argument("--schema", "-c", help="Output effect JSON schema", action="store_true")
+    p.add_argument("--version", "-v", action="version", version=bm.__version__)
+    p.add_argument("--input", "-i", help="Input MP3 or Beat file", required=True)
+    p.add_argument("--effects", "-e", help="JSON effects to apply", required=True)
+    p.add_argument("--output", "-o", help="Output MP3 file", required=True)
+    p.add_argument(
         "--serialize",
         "-s",
         help="Output serialized beat file (can be used in place of MP3)",
         required=False,
         action="store_true",
     )
-    parser.add_argument("--bpm", "-b", type=int, help="BPM estimate")
-    parser.add_argument(
-        "--tolerance",
-        "-t",
-        type=int,
-        help="BPM drift tolerance, only used if --bpm is set",
-        default=15,
-    )
-    args = parser.parse_args()
+    p.add_argument("--bpm", "-b", type=int, help="BPM estimate")
+    p.add_argument("--tolerance", "-t", type=int, help="BPM drift tolerance, only used if --bpm is set", default=15)
+    args = p.parse_args()
+
+    if args.schema:
+        print(json.dumps(EffectRegistry.dump_list_schema(root=True), indent=2))
+        return
 
     if os.path.isfile(args.effects):
         with open(args.effects, "r") as fp:
@@ -35,23 +37,20 @@ def main():
     else:
         effects_json = json.loads(args.effects)
 
-    effects = [bm.effects.load_from_dict(e) for e in effects_json]
+    validate(instance=effects_json, schema=EffectRegistry.dump_list_schema())
+    effects = [bm.effects.load_effect(e) for e in effects_json]
 
     loader = bm.loader.load_beats_by_signal
     filename = os.path.splitext(args.input)
     if args.bpm is not None:
         if filename[1].lower() == ".beat":
-            print(
-                "BPM already encoded in beat file. If you want to change this, please use the MP3."
-            )
+            print("BPM already encoded in beat file. If you want to change this, please use the MP3.")
             sys.exit()
         else:
 
             def loader(f):
                 return bm.loader.load_beats_by_signal(
-                    f,
-                    min_bpm=args.bpm - args.tolerance,
-                    max_bpm=args.bpm + args.tolerance,
+                    f, min_bpm=args.bpm - args.tolerance, max_bpm=args.bpm + args.tolerance
                 )
 
     effect_count = len(effects)

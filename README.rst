@@ -36,6 +36,12 @@ The basic usage is::
 
     $ python -m beatmachine -i in.mp3 -e <JSON string or file describing effects> -o out.mp3
 
+As of 3.2.0, ``beatmachine`` can generate an effect chain JSON schema.::
+
+    $ python -m beatmachine --schema
+
+You can use the output of this in your favorite JSON editor for a more pleasant experience when editing effects.
+
 Python API
 ~~~~~~~~~~
 A new ``Beats`` class is available that wraps most basic functionality. If you

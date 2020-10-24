@@ -17,6 +17,7 @@ class RandomizeAllBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
 
     __effect_name__ = "randomize"
+    __effect_schema__ = {}
 
     def __call__(self, beats):
         shuffled_beats = list(beats)
@@ -40,15 +41,14 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
 
     __effect_name__ = "swap"
+    __effect_schema__ = {
+        "x_period": {"type": "number", "minimum": 1, "default": 2},
+        "y_period": {"type": "number", "minimum": 1, "default": 4, "not": {"$data": "1/x_period"}},
+        "group_size": {"type": "number", "minimum": 1, "default": 1},
+        "offset": {"type": "number", "minimum": 0, "default": 0},
+    }
 
-    def __init__(
-        self,
-        *,
-        x_period: int = 2,
-        y_period: int = 4,
-        group_size: int = 4,
-        offset: int = 0,
-    ):
+    def __init__(self, *, x_period: int = 2, y_period: int = 4, group_size: int = 4, offset: int = 0):
         if x_period < 1 or y_period < 1:
             raise ValueError(
                 f"`swap` effect must have `x_period` and `y_period` both >= 1, "
@@ -57,8 +57,7 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
         if x_period == y_period:
             raise ValueError(
-                f"`swap` effect must have unique `x_period` and `y_period` values, "
-                f"but both were {x_period}"
+                f"`swap` effect must have unique `x_period` and `y_period` values, " f"but both were {x_period}"
             )
 
         if offset < 0:
@@ -69,9 +68,7 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
         self.group_size = group_size
         self.offset = offset
 
-    def __call__(
-        self, beats: Iterable[np.ndarray]
-    ) -> Generator[np.ndarray, None, None]:
+    def __call__(self, beats: Iterable[np.ndarray]) -> Generator[np.ndarray, None, None]:
         beats = iter(beats)
 
         for _ in range(self.offset):
@@ -87,12 +84,6 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
             yield from group
 
-    def __eq__(self, other):
-        return isinstance(other, SwapBeats) and (self.low_period, self.high_period) == (
-            other.low_period,
-            other.high_period,
-        )
-
 
 class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
@@ -101,6 +92,7 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
 
     __effect_name__ = "remap"
+    __effect_schema__ = {"mapping": {"type": "array", "items": {"type": "number"}}}
 
     def __init__(self, *, mapping: List[int]):
         if any(m < 0 or m >= len(mapping) for m in mapping):
@@ -112,9 +104,7 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
         self.mapping = mapping
 
-    def __call__(
-        self, beats: Iterable[np.ndarray]
-    ) -> Generator[np.ndarray, None, None]:
+    def __call__(self, beats: Iterable[np.ndarray]) -> Generator[np.ndarray, None, None]:
         for group in _chunks(beats, len(self.mapping)):
             group_size = len(group)
             remapped_group = []
