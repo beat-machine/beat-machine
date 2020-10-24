@@ -72,7 +72,14 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
         },
     }
 
-    def __init__(self, *, x_period: int = 2, y_period: int = 4, group_size: int = 4, offset: int = 0):
+    def __init__(
+        self,
+        *,
+        x_period: int = 2,
+        y_period: int = 4,
+        group_size: int = 4,
+        offset: int = 0,
+    ):
         if x_period < 1 or y_period < 1:
             raise ValueError(
                 f"`swap` effect must have `x_period` and `y_period` both >= 1, "
@@ -81,7 +88,8 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
         if x_period == y_period:
             raise ValueError(
-                f"`swap` effect must have unique `x_period` and `y_period` values, " f"but both were {x_period}"
+                f"`swap` effect must have unique `x_period` and `y_period` values, "
+                f"but both were {x_period}"
             )
 
         if offset < 0:
@@ -92,7 +100,9 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
         self.group_size = group_size
         self.offset = offset
 
-    def __call__(self, beats: Iterable[np.ndarray]) -> Generator[np.ndarray, None, None]:
+    def __call__(
+        self, beats: Iterable[np.ndarray]
+    ) -> Generator[np.ndarray, None, None]:
         beats = iter(beats)
 
         for _ in range(self.offset):
@@ -146,7 +156,9 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
         self.mapping = mapping
 
-    def __call__(self, beats: Iterable[np.ndarray]) -> Generator[np.ndarray, None, None]:
+    def __call__(
+        self, beats: Iterable[np.ndarray]
+    ) -> Generator[np.ndarray, None, None]:
         for group in _chunks(beats, len(self.mapping)):
             group_size = len(group)
             remapped_group = []

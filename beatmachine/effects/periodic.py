@@ -141,7 +141,14 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         },
     }
 
-    def __init__(self, *, period: int = 1, denominator: int = 2, take_index: int = 0, offset: int = 0):
+    def __init__(
+        self,
+        *,
+        period: int = 1,
+        denominator: int = 2,
+        take_index: int = 0,
+        offset: int = 0,
+    ):
         super().__init__(period=period, offset=offset)
         self.denominator = denominator
         self.take_index = take_index
@@ -189,7 +196,9 @@ class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     def __init__(self, *, period: int = 1, offset: int = 0, times: int = 2):
         if times < 2:
-            raise ValueError(f"Repeat effect must have `times` >= 2, but instead got {times}")
+            raise ValueError(
+                f"Repeat effect must have `times` >= 2, but instead got {times}"
+            )
         super().__init__(period=period, offset=offset)
 
         self.times = times

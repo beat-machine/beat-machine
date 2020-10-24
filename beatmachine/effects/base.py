@@ -57,7 +57,7 @@ class EffectRegistry(type):
                     "description": re.sub(
                         "\\s+", " ", getdoc(EffectRegistry.effects[e])
                     ),
-                    "required": ['type'],
+                    "required": ["type"],
                     "additionalProperties": False,
                 }
             )
@@ -96,15 +96,12 @@ class EffectRegistry(type):
         :param effect: Effect representation to load.
         :return: An effect based on the given definition.
         """
-        validate(
-            instance=effect,
-            schema=EffectRegistry.dump_schema(root=True)
-        )
+        validate(instance=effect, schema=EffectRegistry.dump_schema(root=True))
 
         kwargs = effect.copy()
-        del kwargs['type']
+        del kwargs["type"]
 
-        return EffectRegistry.effects[effect['type']](**kwargs)
+        return EffectRegistry.effects[effect["type"]](**kwargs)
 
     @staticmethod
     def load_effect_chain(effects: Iterable[dict]):
