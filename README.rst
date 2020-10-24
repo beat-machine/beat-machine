@@ -38,7 +38,7 @@ The basic usage is::
 
 As of 3.2.0, ``beatmachine`` can generate an effect chain JSON schema.::
 
-    $ python -m beatmachine --schema
+    $ python -m beatmachine.dump_schema
 
 You can use the output of this in your favorite JSON editor for a more pleasant experience when editing effects.
 

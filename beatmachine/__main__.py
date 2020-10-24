@@ -11,13 +11,10 @@ from beatmachine.effects.base import EffectRegistry
 
 def main():
     p = argparse.ArgumentParser(prog="beatmachine")
-    p.add_argument(
-        "--schema", "-c", help="Output effect JSON schema", action="store_true"
-    )
     p.add_argument("--version", "-v", action="version", version=bm.__version__)
-    p.add_argument("--input", "-i", help="Input MP3 or Beat file", required=True)
-    p.add_argument("--effects", "-e", help="JSON effects to apply", required=True)
-    p.add_argument("--output", "-o", help="Output MP3 file", required=True)
+    p.add_argument("--input", "-i", help="Input MP3 or Beat file")
+    p.add_argument("--effects", "-e", help="JSON effects to apply")
+    p.add_argument("--output", "-o", help="Output MP3 file")
     p.add_argument(
         "--serialize",
         "-s",
@@ -34,10 +31,6 @@ def main():
         default=15,
     )
     args = p.parse_args()
-
-    if args.schema:
-        print(json.dumps(EffectRegistry.dump_list_schema(root=True), indent=2))
-        return
 
     if os.path.isfile(args.effects):
         with open(args.effects, "r") as fp:
