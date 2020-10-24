@@ -103,7 +103,14 @@ class EffectRegistry(type):
         del kwargs["type"]
 
         if schema:
-            validate(instance=effect, schema={"type": "object", "properties": schema, "additionalProperties": False})
+            validate(
+                instance=effect,
+                schema={
+                    "type": "object",
+                    "properties": schema,
+                    "additionalProperties": False,
+                },
+            )
 
         return cls(**kwargs)
 
