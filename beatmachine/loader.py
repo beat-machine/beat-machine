@@ -5,6 +5,7 @@ from typing import BinaryIO, Union, Generator, Callable, Iterable, Tuple
 
 import numpy as np
 from madmom.audio import Signal
+from madmom.features import DBNBeatTrackingProcessor, RNNBeatProcessor
 
 BeatLoader = Callable[[Union[str, BinaryIO]], Tuple[int, int, Iterable[np.ndarray]]]
 
@@ -21,9 +22,6 @@ def load_beats_by_signal(
     :param fps: Resolution to process beats at.
     :return: A generator yielding each beat as a numpy array with shape (samples, channels).
     """
-
-    # Hefty imports! Let's wait until we use them.
-    from madmom.features import DBNBeatTrackingProcessor, RNNBeatProcessor
 
     sig = Signal(fp)
 

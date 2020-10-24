@@ -4,7 +4,7 @@ every other beat.
 """
 
 import abc
-from typing import Callable, Optional, List, Generator
+from typing import Optional, List, Generator
 
 import numpy as np
 
@@ -16,6 +16,23 @@ class PeriodicEffect(LoadableEffect, abc.ABC):
     A PeriodicEffect is an effect that gets applied to beats at a fixed interval, i.e. every other beat. A
     PeriodicEffect with a period of 1 gets applied to every single beat.
     """
+
+    __effect_schema__ = {
+        "period": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "title": "Period",
+            "description": "How often to apply this effect.",
+        },
+        "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset",
+            "description": "How many beats to wait before applying this effect.",
+        },
+    }
 
     def __init__(self, *, period: int = 1, offset: int = 0):
         """
@@ -34,6 +51,7 @@ class PeriodicEffect(LoadableEffect, abc.ABC):
     def process_beat(self, beat: np.ndarray) -> Optional[np.ndarray]:
         """
         Processes a single beat.
+
         :param beat: Beat to process.
         :return: Updated beat or None if it should be removed.
         """
@@ -55,7 +73,7 @@ class PeriodicEffect(LoadableEffect, abc.ABC):
 
 class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
-    A periodic effect that silences beats, retaining their length.
+    Silence beats, retaining their lengths.
     """
 
     __effect_name__ = "silence"
@@ -69,10 +87,26 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
 class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
-    A periodic effect that completely removes beats.
+    Completely remove beats.
     """
 
     __effect_name__ = "remove"
+    __effect_schema__ = {
+        "period": {
+            "type": "integer",
+            "minimum": 2,
+            "default": 2,
+            "title": "Period",
+            "description": "How often to apply this effect. For Remove, this must be at least 2.",
+        },
+        "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset",
+            "description": "How many beats to wait before applying this effect.",
+        },
+    }
 
     def __init__(self, *, period: int = 2, offset: int = 0):
         if period < 2:
@@ -85,10 +119,27 @@ class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
 class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
-    A periodic effect that cuts beats in half.
+    Keeps one piece of each beat. For example, Denominator = 2, Take = 0 takes the first half and Denominator = 2, Take = 1 keeps the second half.
     """
 
     __effect_name__ = "cut"
+    __effect_schema__ = {
+        **PeriodicEffect.__effect_schema__,
+        "denominator": {
+            "type": "integer",
+            "minimum": 2,
+            "default": 2,
+            "title": "Denominator",
+            "description": "How many pieces to cut each beat into.",
+        },
+        "take_index": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Take",
+            "description": "Which piece, starting at 0, to keep.",
+        },
+    }
 
     def __init__(
         self,
@@ -118,7 +169,7 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
 class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
-    A periodic effect that reverses beats.
+    Reverse beats.
     """
 
     __effect_name__ = "reverse"
@@ -129,10 +180,19 @@ class ReverseEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
 class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
-    A periodic effect that repeats beats a specified number of times.
+    Repeat beats.
     """
 
     __effect_name__ = "repeat"
+    __effect_schema__ = {
+        **PeriodicEffect.__effect_schema__,
+        "times": {
+            "type": "number",
+            "minimum": 2,
+            "default": 2,
+            "title": "How many times each affected beat should be played. Must be at least 2, because a value of 1 would do nothing.",
+        },
+    }
 
     def __init__(self, *, period: int = 1, offset: int = 0, times: int = 2):
         if times < 2:
