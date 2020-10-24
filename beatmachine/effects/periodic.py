@@ -23,6 +23,10 @@ class PeriodicEffect(LoadableEffect, abc.ABC):
     }
 
     def __init__(self, *, period: int = 1, offset: int = 0):
+        """
+        :param period: Period (>= 1) to apply this effect on
+        :param offset: How many beats to wait before applying this effect every ``period`` beats
+        """
         if period <= 0:
             raise ValueError(f"Effect period must be > 0, but was {period}")
 
@@ -71,7 +75,7 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     def __eq__(self, other):
         return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
 
-
+      
 class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
     A periodic effect that completely removes beats.

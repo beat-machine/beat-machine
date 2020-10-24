@@ -6,9 +6,9 @@ Next Steps
 .. toctree::
    :maxdepth: 2
 
-   modules
-   cli
+   beatmachine
    json_effects
+   cli
 
 Indices and tables
 ==================
