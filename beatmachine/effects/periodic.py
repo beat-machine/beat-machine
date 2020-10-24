@@ -84,9 +84,6 @@ class SilenceEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     def process_beat(self, beat: np.ndarray) -> np.ndarray:
         return np.zeros(np.shape(beat), dtype="int16")
 
-    def __eq__(self, other):
-        return super(SilenceEveryNth, self).__eq__(other) and self.silence_producer == other.silence_producer
-
 
 class RemoveEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
     """
@@ -138,7 +135,6 @@ class CutEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
         "take_index": {
             "type": "integer",
             "minimum": 0,
-            "exclusiveMaximum": {"$data": "1/denominator"},
             "default": 0,
             "title": "Take",
             "description": "Which piece, starting at 0, to keep.",

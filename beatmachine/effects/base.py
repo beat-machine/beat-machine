@@ -57,7 +57,7 @@ class EffectRegistry(type):
                     "description": re.sub(
                         "\\s+", " ", getdoc(EffectRegistry.effects[e])
                     ),
-                    "required": list(properties.keys()),
+                    "required": ['type'],
                     "additionalProperties": False,
                 }
             )
@@ -96,31 +96,15 @@ class EffectRegistry(type):
         :param effect: Effect representation to load.
         :return: An effect based on the given definition.
         """
-        type_ = effect["type"]
+        validate(
+            instance=effect,
+            schema=EffectRegistry.dump_schema(root=True)
+        )
 
-        try:
-            cls = EffectRegistry.effects[type_]
-        except KeyError as e:
-            raise KeyError(
-                f"No such effect ``{type_}``. If this is a custom effect, ensure that it a) uses EffectRegistry as a "
-                "metaclass and b) is declared before calling load_effect."
-            ) from e
-
-        schema = EffectRegistry.schemas[type_]
         kwargs = effect.copy()
-        del kwargs["type"]
+        del kwargs['type']
 
-        if schema:
-            validate(
-                instance=effect,
-                schema={
-                    "type": "object",
-                    "properties": schema,
-                    "additionalProperties": False,
-                },
-            )
-
-        return cls(**kwargs)
+        return EffectRegistry.effects[effect['type']](**kwargs)
 
     @staticmethod
     def load_effect_chain(effects: Iterable[dict]):
