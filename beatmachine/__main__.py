@@ -32,6 +32,10 @@ def main():
     )
     args = p.parse_args()
 
+    if not args.effects:
+        p.print_help(sys.stderr)
+        sys.exit(1)
+
     if os.path.isfile(args.effects):
         with open(args.effects, "r") as fp:
             effects_json = json.load(fp)
