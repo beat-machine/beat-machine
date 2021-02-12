@@ -20,9 +20,9 @@ class EffectRegistry(type):
     """
     The EffectRegistry is a metaclass that serves to track all loadable effects. Effects may define zero or more of
     the following two attributes to control how they are loaded:
-    
+
     ``__effect_name__`` explicitly sets the name used to recognize an effect. It defaults to the lowercased class name.
-    
+
     ``__effect_schema__`` is an optional schema describing the effect's properties. During validation, this is placed
     within the "properties" field of an object in a Draft 7 JSON schema.
     """

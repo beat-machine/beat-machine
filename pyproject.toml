@@ -4,7 +4,7 @@ to = {format = "setuppy", path = "setup.py"}
 
 [tool.poetry]
 name = "beatmachine"
-version = "3.1.6"
+version = "3.2.0"
 description = "A library for procedurally remixing songs"
 authors = ["dhsavell <dhsavell05@gmail.com>"]
 license = "MIT"
@@ -18,7 +18,7 @@ schema = "^0.7.3"
 jsonschema = "^3.2.0"
 
 [tool.poetry.dev-dependencies]
-black = {version = "^18.3-alpha.0", allow-prereleases = true}
+black = "^20.8b1"
 sphinx = "^2.2"
 parameterized = "^0.7.1"
 pre-commit = "^1.20"
