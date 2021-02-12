@@ -10,12 +10,13 @@ authors = ["dhsavell <dhsavell05@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = ">=3.7"
 madmom = {git = "https://github.com/CPJKU/madmom.git", rev = "805c08e69b4390ce763c098474b2f96fab47bf60"}
 deprecation = "^2.0"
 soundfile = "^0.10.3"
 schema = "^0.7.3"
 jsonschema = "^3.2.0"
+numpy = "^1.20.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"

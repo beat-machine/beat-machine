@@ -14,8 +14,9 @@ beatmachine
     :alt: Documentation Status
 
 
-The Beat Machine is a library for remixing songs by procedurally editing their beats, inspired by the creations on
-`/r/BeatEdits <https://www.reddit.com/r/BeatEdits/>`_. It works both as a library and as a command-line utility.
+The Beat Machine is a library for remixing songs by procedurally editing their
+beats, inspired by the creations on `/r/BeatEdits <https://www.reddit.com/r/BeatEdits/>`_.
+It works both as a library and as a command-line utility.
 
 Installation
 ------------
@@ -24,38 +25,49 @@ The ``beatmachine`` library is available on PyPI::
 
    $ pip install beatmachine
 
-Quick Reference
----------------
+Usage
+-----
 
 CLI
 ~~~
-A simple CLI is available that reads effects from JSON files. See the docs for
-more info on how to define these.
+When called from the command line, the ``beatmachine`` module will operate on
+a given song with a JSON array of effects.
 
-The basic usage is::
+Its basic usage is::
 
-    $ python -m beatmachine -i in.mp3 -e <JSON string or file describing effects> -o out.mp3
+    $ python -m beatmachine -i in.mp3 -e '[{"type": "swap", "x_period": 2, "y_period": 4}]' -o out.mp3
 
-As of 3.2.0, ``beatmachine`` can generate an effect chain JSON schema.::
+A complete list of effects can be found by browsing the documentation for the
+``effects`` package. The general format of an effect object is::
+
+    {
+        "type": "value of __effect_name__",
+
+        "kwarg1": true,
+        "kwarg2": 2,
+        "kwarg3": "etc..."
+    }
+
+As of 3.2.0, ``beatmachine`` also offers a `JSON schema <https://json-schema.org/>`_
+for the effects array. It can be accessed through::
 
     $ python -m beatmachine.dump_schema
 
-You can use the output of this in your favorite JSON editor for a more pleasant experience when editing effects.
+This command always provides the latest output, and reflects local
+modifications.
 
-Python API
-~~~~~~~~~~
-A new ``Beats`` class is available that wraps most basic functionality. If you
-want to get started quickly, this may be for you!
-
-Here's a sample::
+Python
+~~~~~~
+The ``beatmachine.Beats`` class provides a simple interface for working with songs::
 
     import beatmachine as bm
 
     beats = bm.Beats.from_song('in.mp3')
     beats.apply(bm.effects.RemoveEveryNth(2)).save('out.mp3')
 
-If you want to get more advanced, you can also convert to an ``ndarray`` at
-any point::
+All of the effects are located in the ``effects`` package and its sub-modules.
+For custom operations, ``to_ndarray()`` is available to expose the underlying
+NumPy array::
 
     import beatmachine as bm
     import numpy as np
