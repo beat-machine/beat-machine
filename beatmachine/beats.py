@@ -58,7 +58,6 @@ class Beats:
         cmd = [
             # fmt: off
             "ffmpeg",
-            "-hide_banner",
             "-loglevel", "panic",
             "-y",
             "-f", "s16le",
@@ -130,6 +129,7 @@ class Beats:
     def from_song(
         path_or_fp: Union[str, BinaryIO],
         beat_loader: loader.BeatLoader = loader.load_beats_by_signal,
+        loader_args: dict = None,
     ) -> "Beats":
         """
         Loads a song as a Beats object.
@@ -137,5 +137,5 @@ class Beats:
         :param path_or_fp: Path or file-like object to load from.
         :param beat_loader: Callable to load and split the given path/file-like object into beats.
         """
-        sr, channels, beats = beat_loader(path_or_fp)
+        sr, channels, beats = beat_loader(path_or_fp, **(loader_args or {}))
         return Beats(sr, channels, list(beats))

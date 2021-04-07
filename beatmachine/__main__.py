@@ -1,107 +1,116 @@
-import argparse
-import json
 import os
-import sys
 import pickle
-from jsonschema import validate
 
+import click
 import beatmachine as bm
-from beatmachine.effects.base import EffectRegistry
 
 
-def main():
-    p = argparse.ArgumentParser(prog="beatmachine")
-    p.add_argument("--version", "-v", action="version", version=bm.__version__)
-    p.add_argument("--input", "-i", help="Input MP3 or Beat file")
-    p.add_argument("--effects", "-e", help="JSON effects to apply")
-    p.add_argument("--output", "-o", help="Output MP3 file")
-    p.add_argument(
-        "--serialize",
-        "-s",
-        help="Output serialized beat file (can be used in place of MP3)",
-        required=False,
-        action="store_true",
-    )
-    p.add_argument("--bpm", "-b", type=int, help="BPM estimate")
-    p.add_argument(
-        "--tolerance",
-        "-t",
-        type=int,
-        help="BPM drift tolerance, only used if --bpm is set",
-        default=15,
-    )
-    args = p.parse_args()
+@click.group()
+def cli():
+    pass
 
-    if not args.effects:
-        p.print_help(sys.stderr)
-        sys.exit(1)
 
-    if os.path.isfile(args.effects):
-        with open(args.effects, "r") as fp:
-            effects_json = json.load(fp)
+@cli.command()
+@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.option("-o", "--output", type=click.Path(writable=True, dir_okay=False))
+@click.option("--min-bpm", type=int, default=60)
+@click.option("--max-bpm", type=int, default=300)
+def apply(input, output, min_bpm, max_bpm):
+    """
+    Apply an effect chain to an input file.
+
+    See all valid effects using the `effects` subcommand. Preprocessed files
+    generated with `preprocess` can be used to skip the processing step.
+
+    Note that preprocessed files carry the same security risks as any pickled
+    Python objects. Use .beat files from trusted sources!
+    """
+    if not output:
+        stem, ext = os.path.splitext(input)
+
+        if ext == ".beat":
+            ext = ".mp3"
+
+        output = stem + "-out" + ext
+
+    if input.endswith(".beat"):
+        click.echo("Using preprocessed .beat file")
+
+        with open(input, "rb") as fp:
+            beats = pickle.load(fp)
     else:
-        effects_json = json.loads(args.effects)
+        click.echo(f"Processing {input}")
+        click.echo("Hint: use the `preprocess` command to do this in advance")
 
-    validate(instance=effects_json, schema=EffectRegistry.dump_list_schema())
-    effects = [bm.effects.load_effect(e) for e in effects_json]
+        beats = bm.Beats.from_song(
+            input, loader_args={"min_bpm": min_bpm, "max_bpm": max_bpm}
+        )
 
-    loader = bm.loader.load_beats_by_signal
-    filename = os.path.splitext(args.input)
-    if args.bpm is not None:
-        if filename[1].lower() == ".beat":
-            print(
-                "BPM already encoded in beat file. If you want to change this, please use the MP3."
-            )
-            sys.exit()
-        else:
+    click.echo("Applying effects")
+    raise NotImplementedError("Load effects")
 
-            def loader(f):
-                return bm.loader.load_beats_by_signal(
-                    f,
-                    min_bpm=args.bpm - args.tolerance,
-                    max_bpm=args.bpm + args.tolerance,
-                )
+    click.echo(f"Writing audio file to {output}")
+    beats.save(output)
 
-    effect_count = len(effects)
-    if os.path.isfile(args.input):
-        if filename[1].lower() == ".mp3":
-            print("Locating beats (this may take a while)")
-            beats = bm.Beats.from_song(args.input, beat_loader=loader)
-            if args.serialize is True:
-                with open(filename[0] + ".beat", "wb") as fp:
-                    fp.write(pickle.dumps(beats))
-                    fp.close()
-                    print(
-                        "Wrote beats out to "
-                        + filename[0]
-                        + ".beat. Use this instead of the MP3 to speed up processing."
-                    )
-        elif filename[1].lower() == ".beat":
-            with open(args.input, "rb") as fp:
-                try:
-                    beats = pickle.load(fp)
-                    fp.close()
-                except Exception:
-                    print(
-                        "Something is wrong with your previously generated beats file. Please try rebuilding it from the MP3."
-                    )
-                    fp.close()
-                    sys.exit()
-        else:
-            print("Please specify either an MP3 or a previously generated beats file.")
-            sys.exit()
-    else:
-        print("Please specify either an MP3 or a previously generated beats file.")
-        sys.exit()
 
-    for i, effect in enumerate(effects):
-        print(f"Applying effect {i + 1}/{effect_count} ({effect.__effect_name__})")
-        beats = beats.apply(effect)
+@cli.command()
+@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.option("-o", "--output", type=click.Path(writable=True, dir_okay=False))
+@click.option("--min-bpm", type=int, default=60)
+@click.option("--max-bpm", type=int, default=300)
+def preprocess(input, output, min_bpm, max_bpm):
+    """
+    Convert a given audio file into a pickled .beat file. The resulting file
+    can be used as an input to any other command to skip the processing step.
+    """
 
-    print("Rendering song")
-    beats.save(args.output)
-    print("Wrote output to", args.output)
+    if input.endswith(".beat"):
+        click.echo(f"Input file {input} has already been preprocessed", err=True)
+        return 1
+
+    if not output:
+        output = os.path.splitext(input)[0] + ".beat"
+
+    click.echo(f"Processing {input}")
+    beats = bm.Beats.from_song(
+        input, loader_args={"min_bpm": min_bpm, "max_bpm": max_bpm}
+    )
+
+    if os.path.isfile(output):
+        click.confirm(f"Overwrite existing file at {output}", abort=True)
+
+    click.echo(f"Writing beats to {output}")
+    with open(output, "wb") as fp:
+        fp.write(pickle.dumps(beats))
+
+
+@cli.command()
+@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.option("--min-bpm", type=int, default=60)
+@click.option("--max-bpm", type=int, default=300)
+def analyze():
+    """
+    Report song BPM and beat times using madmom.
+    """
+    pass
+
+
+@cli.command("validate")
+@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
+def validate_effects():
+    """
+    Validate a JSON effect chain.
+    """
+    pass
+
+
+@cli.command("effects")
+def list_effects():
+    """
+    List all available effects.
+    """
+    pass
 
 
 if __name__ == "__main__":
-    main()
+    cli()

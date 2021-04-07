@@ -127,7 +127,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "click"
 version = "7.1.2"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -762,7 +762,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7"
-content-hash = "3b77b573eead66c267b6c81122dbe9c3b8119f9fea233b38e288490cf21d7be2"
+content-hash = "0a121d929c77c603de013a56522574e2dea0c807df262b6a18b3bcdae549d4de"
 
 [metadata.files]
 alabaster = [
