@@ -1,21 +1,66 @@
 import os
 import pickle
+import json
 
 import click
 import beatmachine as bm
 
 
+def _hint(msg):
+    click.secho("Hint: " + msg, fg="bright_black")
+
+
+class BeatsFromDisk(click.Path):
+    def __init__(self):
+        super().__init__(exists=True, dir_okay=False)
+
+    def convert(self, value, param, ctx):
+        if not value:
+            return None
+
+        value = super().convert(value, param, ctx)
+
+        if value.endswith(".beat"):
+            with open(value, "rb") as fp:
+                beats = pickle.load(fp)
+        else:
+            click.echo(f"Locating beats in {value}")
+            beats = bm.Beats.from_song(value, loader_args=ctx.obj)
+
+        return (beats, value)
+
+
+class EffectChain(click.ParamType):
+    name = "effects"
+
+    def convert(self, value, param, ctx):
+        if not value:
+            return None
+
+        # Check in the following order:
+        #  1. Inline JSON
+        #  2. Local path (absolute or relative to current directory)
+        #  3. User preset folder (something like ~/.beatmachine/presets or env)
+        raise NotImplementedError("Resolve effects")
+
+
 @click.group()
-def cli():
-    pass
+@click.option(
+    "-b", "--min-bpm", type=int, default=60, help="Minimum BPM for processing."
+)
+@click.option(
+    "-B", "--max-bpm", type=int, default=300, help="Maximum BPM for processing."
+)
+@click.pass_context
+def cli(ctx, min_bpm, max_bpm):
+    ctx.obj = {"min_bpm": min_bpm, "max_bpm": max_bpm}
 
 
 @cli.command()
-@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
+@click.option("-e", "--effects", required=True, type=EffectChain())
 @click.option("-o", "--output", type=click.Path(writable=True, dir_okay=False))
-@click.option("--min-bpm", type=int, default=60)
-@click.option("--max-bpm", type=int, default=300)
-def apply(input, output, min_bpm, max_bpm):
+@click.argument("input", nargs=1, type=BeatsFromDisk())
+def apply(input, output, effects):
     """
     Apply an effect chain to an input file.
 
@@ -23,31 +68,20 @@ def apply(input, output, min_bpm, max_bpm):
     generated with `preprocess` can be used to skip the processing step.
 
     Note that preprocessed files carry the same security risks as any pickled
-    Python objects. Use .beat files from trusted sources!
+    Python objects. Only use .beat files from trusted sources!
     """
+    beats, filename = input
+
     if not output:
-        stem, ext = os.path.splitext(input)
+        stem, ext = os.path.splitext(filename)
 
         if ext == ".beat":
             ext = ".mp3"
 
         output = stem + "-out" + ext
 
-    if input.endswith(".beat"):
-        click.echo("Using preprocessed .beat file")
-
-        with open(input, "rb") as fp:
-            beats = pickle.load(fp)
-    else:
-        click.echo(f"Processing {input}")
-        click.echo("Hint: use the `preprocess` command to do this in advance")
-
-        beats = bm.Beats.from_song(
-            input, loader_args={"min_bpm": min_bpm, "max_bpm": max_bpm}
-        )
-
     click.echo("Applying effects")
-    raise NotImplementedError("Load effects")
+    beats = beats.apply_all(*effects)
 
     click.echo(f"Writing audio file to {output}")
     beats.save(output)
@@ -56,9 +90,8 @@ def apply(input, output, min_bpm, max_bpm):
 @cli.command()
 @click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
 @click.option("-o", "--output", type=click.Path(writable=True, dir_okay=False))
-@click.option("--min-bpm", type=int, default=60)
-@click.option("--max-bpm", type=int, default=300)
-def preprocess(input, output, min_bpm, max_bpm):
+@click.pass_context
+def preprocess(ctx, input, output):
     """
     Convert a given audio file into a pickled .beat file. The resulting file
     can be used as an input to any other command to skip the processing step.
@@ -72,9 +105,7 @@ def preprocess(input, output, min_bpm, max_bpm):
         output = os.path.splitext(input)[0] + ".beat"
 
     click.echo(f"Processing {input}")
-    beats = bm.Beats.from_song(
-        input, loader_args={"min_bpm": min_bpm, "max_bpm": max_bpm}
-    )
+    beats = bm.Beats.from_song(input, loader_args=ctx.obj)
 
     if os.path.isfile(output):
         click.confirm(f"Overwrite existing file at {output}", abort=True)
@@ -86,8 +117,6 @@ def preprocess(input, output, min_bpm, max_bpm):
 
 @cli.command()
 @click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
-@click.option("--min-bpm", type=int, default=60)
-@click.option("--max-bpm", type=int, default=300)
 def analyze():
     """
     Report song BPM and beat times using madmom.

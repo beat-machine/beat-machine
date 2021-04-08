@@ -6,6 +6,7 @@ from . import base, periodic, temporal
 
 load_from_dict = base.EffectRegistry.load_effect_from_dict
 load_effect = base.EffectRegistry.load_effect
+load_effect_chain = base.EffectRegistry.load_effect_chain
 
 from .periodic import *
 from .temporal import *

@@ -41,6 +41,7 @@ class Beats:
         """
         return Beats(
             self._sr,
+            self._channels,
             reduce(lambda beats, effect: effect(beats), effects_list, self._beats),
         )
 
