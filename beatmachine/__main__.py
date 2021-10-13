@@ -1,18 +1,23 @@
 import os
 import pickle
 import json
+import inspect
+import textwrap
+import pprint
+from jsonschema.exceptions import ValidationError
 
 import click
 import beatmachine as bm
 
 
 def _hint(msg):
-    click.secho("Hint: " + msg, fg="bright_black")
+    click.secho("Hint: " + msg, fg="blue")
 
 
 class BeatsFromDisk(click.Path):
-    def __init__(self):
+    def __init__(self, preprocess_hint=True):
         super().__init__(exists=True, dir_okay=False)
+        self.preprocess_hint = preprocess_hint
 
     def convert(self, value, param, ctx):
         if not value:
@@ -24,6 +29,14 @@ class BeatsFromDisk(click.Path):
             with open(value, "rb") as fp:
                 beats = pickle.load(fp)
         else:
+            if self.preprocess_hint:
+                stem, _ = os.path.splitext(value)
+                if os.path.isfile(stem + '.beat'):
+                    _hint(
+                        f'A preprocessed version of this song seems to exist at {stem}.beat')
+                    _hint(
+                        f'Replacing "{value}" with "{stem}.beat" will skip this processing step')
+
             click.echo(f"Locating beats in {value}")
             beats = bm.Beats.from_song(value, loader_args=ctx.obj)
 
@@ -41,15 +54,32 @@ class EffectChain(click.ParamType):
         #  1. Inline JSON
         #  2. Local path (absolute or relative to current directory)
         #  3. User preset folder (something like ~/.beatmachine/presets or env)
-        raise NotImplementedError("Resolve effects")
+
+        try:
+            effects_obj = json.loads(value)
+        except ValueError:
+            try:
+                with open(value, 'r') as effects_file:
+                    effects_obj = json.load(effects_file)
+            except:
+                self.fail(
+                    "Effect argument should be an inline JSON string or a JSON file")
+
+        if not isinstance(effects_obj, list):
+            self.fail("Effect root JSON object must be an array")
+
+        try:
+            return bm.effects.load_effect_chain(effects_obj)
+        except ValidationError as e:
+            self.fail(f"Effect {e.instance} is invalid: {e.message}")
 
 
 @click.group()
 @click.option(
-    "-b", "--min-bpm", type=int, default=60, help="Minimum BPM for processing."
+    "-b", "--min-bpm", type=int, default=60, help="Minimum BPM of input audio, if applicable."
 )
 @click.option(
-    "-B", "--max-bpm", type=int, default=300, help="Maximum BPM for processing."
+    "-B", "--max-bpm", type=int, default=300, help="Maximum BPM of input audio, if applicable."
 )
 @click.pass_context
 def cli(ctx, min_bpm, max_bpm):
@@ -71,10 +101,9 @@ def apply(input, output, effects):
     Python objects. Only use .beat files from trusted sources!
     """
     beats, filename = input
+    stem, ext = os.path.splitext(filename)
 
     if not output:
-        stem, ext = os.path.splitext(filename)
-
         if ext == ".beat":
             ext = ".mp3"
 
@@ -85,6 +114,8 @@ def apply(input, output, effects):
 
     click.echo(f"Writing audio file to {output}")
     beats.save(output)
+
+    print('Done!')
 
 
 @cli.command()
@@ -98,7 +129,8 @@ def preprocess(ctx, input, output):
     """
 
     if input.endswith(".beat"):
-        click.echo(f"Input file {input} has already been preprocessed", err=True)
+        click.echo(
+            f"Input file {input} has already been preprocessed", err=True)
         return 1
 
     if not output:
@@ -113,6 +145,8 @@ def preprocess(ctx, input, output):
     click.echo(f"Writing beats to {output}")
     with open(output, "wb") as fp:
         fp.write(pickle.dumps(beats))
+
+    print('Done!')
 
 
 @cli.command()
@@ -134,11 +168,52 @@ def validate_effects():
 
 
 @cli.command("effects")
-def list_effects():
+@click.option("-j", "--json-schema", is_flag=True, help="If set, outputs a JSON schema for effect chains.")
+@click.option("-n", "--names-only", is_flag=True, help="If set, prints a list of effect names.")
+def list_effects(json_schema, names_only):
     """
-    List all available effects.
+    List all available effects in various formats.
     """
-    pass
+
+    if json_schema:
+        print(bm.effects.base.EffectRegistry.dump_list_schema(root=True))
+        return
+
+    effects = bm.effects.base.EffectRegistry.effects
+
+    if names_only:
+        for name in effects.keys():
+            print(name)
+        return
+
+    print(f'{len(effects)} effects are available.')
+
+    # TODO: Clean up
+    for name, effect_cls in effects.items():
+        print()
+        print()
+        print(name)
+
+        print()
+        print('  Description')
+        description = inspect.cleandoc(
+            effect_cls.__doc__) or 'No description.'
+        print(textwrap.fill(description,
+              initial_indent='    ', subsequent_indent='    '))
+
+        print()
+        print('  Parameters')
+
+        schema = effect_cls.__effect_schema__
+        if schema:
+            for param, param_schema in schema.items():
+                print(
+                    f'    {param} ({param_schema["type"]}) - {param_schema["title"]}')
+                if 'description' in param_schema:
+                    print(textwrap.fill(
+                        param_schema['description'], initial_indent='      ', subsequent_indent='      '))
+        else:
+            print('    No parameters.')
 
 
 if __name__ == "__main__":
