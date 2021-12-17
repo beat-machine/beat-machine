@@ -83,6 +83,11 @@ class EffectChain(click.ParamType):
 )
 @click.pass_context
 def cli(ctx, min_bpm, max_bpm):
+    """
+    Remix songs by rearranging and modifying beats.
+
+    Beat detection features are provided by madmom: https://github.com/CPJKU/madmom.
+    """
     ctx.obj = {"min_bpm": min_bpm, "max_bpm": max_bpm}
 
 
@@ -92,7 +97,7 @@ def cli(ctx, min_bpm, max_bpm):
 @click.argument("input", nargs=1, type=BeatsFromDisk())
 def apply(input, output, effects):
     """
-    Apply an effect chain to an input file.
+    Apply effects to an input file.
 
     See all valid effects using the `effects` subcommand. Preprocessed files
     generated with `preprocess` can be used to skip the processing step.
@@ -109,6 +114,9 @@ def apply(input, output, effects):
 
         output = stem + "-out" + ext
 
+    if os.path.isfile(output):
+        click.confirm(f"Overwrite existing file at {output}", abort=True)
+
     click.echo("Applying effects")
     beats = beats.apply_all(*effects)
 
@@ -124,8 +132,7 @@ def apply(input, output, effects):
 @click.pass_context
 def preprocess(ctx, input, output):
     """
-    Convert a given audio file into a pickled .beat file. The resulting file
-    can be used as an input to any other command to skip the processing step.
+    Locate and beats in an audio file for use with `apply`.
     """
 
     if input.endswith(".beat"):
@@ -149,15 +156,6 @@ def preprocess(ctx, input, output):
     print('Done!')
 
 
-@cli.command()
-@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
-def analyze():
-    """
-    Report song BPM and beat times using madmom.
-    """
-    pass
-
-
 @cli.command("validate")
 @click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
 def validate_effects():
@@ -176,7 +174,7 @@ def list_effects(json_schema, names_only):
     """
 
     if json_schema:
-        print(bm.effects.base.EffectRegistry.dump_list_schema(root=True))
+        print(json.dumps(bm.effects.base.EffectRegistry.dump_list_schema(root=True)))
         return
 
     effects = bm.effects.base.EffectRegistry.effects
@@ -190,7 +188,6 @@ def list_effects(json_schema, names_only):
 
     # TODO: Clean up
     for name, effect_cls in effects.items():
-        print()
         print()
         print(name)
 
