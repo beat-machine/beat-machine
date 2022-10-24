@@ -112,8 +112,13 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
         if offset < 0:
             raise ValueError(f"Offset must be >= 0, but was {offset}")
 
-        self.low_period = (min(x_period, y_period) - 1) % group_size + 1
-        self.high_period = (max(x_period, y_period) - 1) % group_size + 1
+        # Historical bad decision: x/y periods were 1-indexed
+        x_period_index = (x_period - 1) % group_size
+        y_period_index = (y_period - 1) % group_size
+
+        self.low_period = min(x_period_index, y_period_index)
+        self.high_period = max(x_period_index, y_period_index)
+
         self.group_size = group_size
         self.offset = offset
 
@@ -126,11 +131,13 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
             yield next(beats)
 
         for group in _chunks(beats, self.group_size):
-            if len(group) >= self.high_period:
+            print(self.low_period, self.high_period, group)
+
+            if len(group) > self.high_period:
                 # Swap low and high beats
-                (group[self.low_period - 1], group[self.high_period - 1]) = (
-                    group[self.high_period - 1],
-                    group[self.low_period - 1],
+                (group[self.low_period], group[self.high_period]) = (
+                    group[self.high_period],
+                    group[self.low_period],
                 )
 
             yield from group
