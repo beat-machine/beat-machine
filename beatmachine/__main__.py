@@ -49,9 +49,7 @@ def main():
     filename = os.path.splitext(args.input)
     if args.bpm is not None:
         if filename[1].lower() == ".beat":
-            print(
-                "BPM already encoded in beat file. If you want to change this, please use the MP3."
-            )
+            print("BPM already encoded in beat file. If you want to change this, please use the MP3.")
             sys.exit()
         else:
 

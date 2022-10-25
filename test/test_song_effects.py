@@ -21,9 +21,7 @@ def dummy_song():
     ],
 )
 def test_swap_beats(periods, beats_per_measure, song, result):
-    effect = SwapBeats(
-        x_period=periods[0], y_period=periods[1], group_size=beats_per_measure
-    )
+    effect = SwapBeats(x_period=periods[0], y_period=periods[1], group_size=beats_per_measure)
     assert result == list(effect(song))
 
 
