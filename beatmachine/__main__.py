@@ -42,16 +42,16 @@ def main():
     else:
         effects_json = json.loads(args.effects)
 
+    # TODO: This produces super unhelpful error messages, usually just telling you to make the effect "silence"
+    #       instead.
     validate(instance=effects_json, schema=EffectRegistry.dump_list_schema())
-    effects = [bm.effects.load_effect(e) for e in effects_json]
+    effects = bm.effects.load_effect_chain(effects_json)
 
     loader = bm.loader.load_beats_by_signal
     filename = os.path.splitext(args.input)
     if args.bpm is not None:
         if filename[1].lower() == ".beat":
-            print(
-                "BPM already encoded in beat file. If you want to change this, please use the MP3."
-            )
+            print("BPM already encoded in beat file. If you want to change this, please use the MP3.")
             sys.exit()
         else:
 

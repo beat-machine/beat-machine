@@ -196,9 +196,7 @@ class RepeatEveryNth(PeriodicEffect, metaclass=EffectABCMeta):
 
     def __init__(self, *, period: int = 1, offset: int = 0, times: int = 2):
         if times < 2:
-            raise ValueError(
-                f"Repeat effect must have `times` >= 2, but instead got {times}"
-            )
+            raise ValueError(f"Repeat effect must have `times` >= 2, but instead got {times}")
         super().__init__(period=period, offset=offset)
 
         self.times = times

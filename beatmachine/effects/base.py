@@ -10,7 +10,6 @@ from typing import Callable, Iterable
 
 import numpy as np
 from jsonschema import validate
-from deprecation import deprecated
 from inspect import getdoc
 
 Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
@@ -54,9 +53,7 @@ class EffectRegistry(type):
                     "type": "object",
                     "properties": properties,
                     "title": e.capitalize(),
-                    "description": re.sub(
-                        "\\s+", " ", getdoc(EffectRegistry.effects[e])
-                    ),
+                    "description": re.sub("\\s+", " ", getdoc(EffectRegistry.effects[e])),
                     "required": ["type"],
                     "additionalProperties": False,
                 }
@@ -106,15 +103,6 @@ class EffectRegistry(type):
     @staticmethod
     def load_effect_chain(effects: Iterable[dict]):
         return [EffectRegistry.load_effect(e) for e in effects]
-
-    @staticmethod
-    @deprecated(
-        deprecated_in="3.2.0",
-        removed_in="4.0.0",
-        details="Prefer ``EffectRegistry.load_effect`` or ``beatmachine.effects.load_effect``.",
-    )
-    def load_effect_from_dict(effect: dict) -> "LoadableEffect":
-        return EffectRegistry.load_effect(effect)
 
 
 class EffectABCMeta(EffectRegistry, abc.ABCMeta):

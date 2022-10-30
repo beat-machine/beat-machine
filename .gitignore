@@ -107,6 +107,7 @@ venv.bak/
 *.mp3
 *.beat
 *.json
+!examples/*.json
 
 # IDE files
 .idea/

@@ -1,0 +1,8 @@
+[
+    {
+        "type": "cut",
+        "period": 1,
+        "denominator": 2,
+        "take_index": 0
+    }
+]

@@ -105,32 +105,34 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
         if x_period == y_period:
             raise ValueError(
-                f"`swap` effect must have unique `x_period` and `y_period` values, "
-                f"but both were {x_period}"
+                f"`swap` effect must have unique `x_period` and `y_period` values, " f"but both were {x_period}"
             )
 
         if offset < 0:
             raise ValueError(f"Offset must be >= 0, but was {offset}")
 
-        self.low_period = (min(x_period, y_period) - 1) % group_size + 1
-        self.high_period = (max(x_period, y_period) - 1) % group_size + 1
+        # Historical bad decision: x/y periods were 1-indexed
+        x_period_index = (x_period - 1) % group_size
+        y_period_index = (y_period - 1) % group_size
+
+        self.low_period = min(x_period_index, y_period_index)
+        self.high_period = max(x_period_index, y_period_index)
+
         self.group_size = group_size
         self.offset = offset
 
-    def __call__(
-        self, beats: Iterable[np.ndarray]
-    ) -> Generator[np.ndarray, None, None]:
+    def __call__(self, beats: Iterable[np.ndarray]) -> Generator[np.ndarray, None, None]:
         beats = iter(beats)
 
         for _ in range(self.offset):
             yield next(beats)
 
         for group in _chunks(beats, self.group_size):
-            if len(group) >= self.high_period:
+            if len(group) > self.high_period:
                 # Swap low and high beats
-                (group[self.low_period - 1], group[self.high_period - 1]) = (
-                    group[self.high_period - 1],
-                    group[self.low_period - 1],
+                (group[self.low_period], group[self.high_period]) = (
+                    group[self.high_period],
+                    group[self.low_period],
                 )
 
             yield from group
@@ -173,9 +175,7 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
 
         self.mapping = mapping
 
-    def __call__(
-        self, beats: Iterable[np.ndarray]
-    ) -> Generator[np.ndarray, None, None]:
+    def __call__(self, beats: Iterable[np.ndarray]) -> Generator[np.ndarray, None, None]:
         for group in _chunks(beats, len(self.mapping)):
             group_size = len(group)
             remapped_group = []

@@ -52,9 +52,7 @@ class Beats:
         """
         return np.concatenate(list(self._beats), axis=0)
 
-    def _create_ffmpeg_command(
-        self, dst: str, out_format: str = None, extra_args: List[str] = None
-    ):
+    def _create_ffmpeg_command(self, dst: str, out_format: str = None, extra_args: List[str] = None):
         cmd = [
             # fmt: off
             "ffmpeg",
@@ -77,9 +75,7 @@ class Beats:
         cmd.append(dst)
         return cmd
 
-    def _save_to_file(
-        self, filename: str, out_format: str = None, extra_ffmpeg_args: List[str] = None
-    ):
+    def _save_to_file(self, filename: str, out_format: str = None, extra_ffmpeg_args: List[str] = None):
         p = subprocess.Popen(
             self._create_ffmpeg_command(filename, out_format, extra_ffmpeg_args),
             stdin=subprocess.PIPE,
@@ -88,9 +84,7 @@ class Beats:
         p.stdin.close()
         p.wait()
 
-    def _save_to_binary_io(
-        self, fp: BinaryIO, out_format: str = None, extra_ffmpeg_args: List[str] = None
-    ):
+    def _save_to_binary_io(self, fp: BinaryIO, out_format: str = None, extra_ffmpeg_args: List[str] = None):
         if not out_format:
             raise ValueError("out_format is required when writing to file-like object")
 

@@ -10,9 +10,7 @@ def dummy_song():
     return [np.full(4, 1), np.full(4, 2), np.full(4, 3), np.full(4, 4)]
 
 
-def assert_beat_sequences_equal(
-    expected: Union[List[List[int]], List[np.ndarray]], actual: List[np.ndarray]
-):
+def assert_beat_sequences_equal(expected: Union[List[List[int]], List[np.ndarray]], actual: List[np.ndarray]):
     __tracebackhide__ = True
     assert len(expected) == len(actual)
     for (e, a) in zip(expected, actual):
@@ -21,9 +19,7 @@ def assert_beat_sequences_equal(
 
 def test_silence_every_nth(dummy_song):
     silence_effect = SilenceEveryNth(period=2)
-    assert_beat_sequences_equal(
-        [[1] * 4, [0] * 4, [3] * 4, [0] * 4], list(silence_effect(dummy_song))
-    )
+    assert_beat_sequences_equal([[1] * 4, [0] * 4, [3] * 4, [0] * 4], list(silence_effect(dummy_song)))
 
 
 def test_remove_every_nth(dummy_song):
@@ -80,16 +76,12 @@ def test_reverse_every_nth():
     reversed_beat = np.flip(forward_beat)
     reverse_effect = ReverseEveryNth(period=2)
 
-    assert_beat_sequences_equal(
-        [forward_beat, reversed_beat] * 2, list(reverse_effect([forward_beat] * 4))
-    )
+    assert_beat_sequences_equal([forward_beat, reversed_beat] * 2, list(reverse_effect([forward_beat] * 4)))
 
 
 def test_repeat_every_nth(dummy_song):
     repeat_effect = RepeatEveryNth(period=2, times=2)
-    assert_beat_sequences_equal(
-        [[1] * 4, [2] * 8, [3] * 4, [4] * 8], list(repeat_effect(dummy_song))
-    )
+    assert_beat_sequences_equal([[1] * 4, [2] * 8, [3] * 4, [4] * 8], list(repeat_effect(dummy_song)))
 
 
 def test_useless_repeat_effect_disallowed():
