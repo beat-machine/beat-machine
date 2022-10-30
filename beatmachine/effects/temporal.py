@@ -128,8 +128,6 @@ class SwapBeats(LoadableEffect, metaclass=EffectABCMeta):
             yield next(beats)
 
         for group in _chunks(beats, self.group_size):
-            print(self.low_period, self.high_period, group)
-
             if len(group) > self.high_period:
                 # Swap low and high beats
                 (group[self.low_period], group[self.high_period]) = (
