@@ -1,12 +1,13 @@
 import argparse
 import json
 import os
-import sys
 import pickle
+import sys
+
 from jsonschema import validate
 
 import beatmachine as bm
-from beatmachine.effects.base import EffectRegistry
+from beatmachine.effect_registry import EffectRegistry
 
 
 def main():
@@ -45,7 +46,7 @@ def main():
     # TODO: This produces super unhelpful error messages, usually just telling you to make the effect "silence"
     #       instead.
     validate(instance=effects_json, schema=EffectRegistry.dump_list_schema())
-    effects = bm.effects.load_effect_chain(effects_json)
+    effects = EffectRegistry.load_effect_chain(effects_json)
 
     loader = bm.loader.load_beats_by_signal
     filename = os.path.splitext(args.input)

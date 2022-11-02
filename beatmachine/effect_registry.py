@@ -1,16 +1,10 @@
-"""
-The `base` module contains a base effect class as well as a metaclass-based registry for simple, batteries-included
-deserialization of effects.
-"""
-
 import abc
 import re
-
+from inspect import getdoc
 from typing import Callable, Iterable
 
 import numpy as np
 from jsonschema import validate
-from inspect import getdoc
 
 Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
 
@@ -120,13 +114,7 @@ class LoadableEffect(abc.ABC):
 
     __abstract__ = True
 
-    @property
-    @abc.abstractmethod
-    def __effect_name__(self) -> str:
-        """
-        __effect_name__ is the name of this effect.
-        """
-        raise NotImplementedError
+    __effect_name__: str = NotImplemented
 
     @abc.abstractmethod
     def __call__(self, beats: Iterable[np.ndarray]) -> Iterable[np.ndarray]:

@@ -1,7 +1,7 @@
 """
 The ``loader`` module contains functions for loading beats from song files.
 """
-from typing import BinaryIO, Union, Generator, Callable, Iterable, Tuple
+from typing import BinaryIO, Callable, Generator, Iterable, Tuple, Union
 
 import numpy as np
 from madmom.audio import Signal

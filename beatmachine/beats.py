@@ -1,10 +1,11 @@
 import subprocess
 from functools import reduce
-from typing import List, BinaryIO, Union, overload
+from typing import BinaryIO, List, Union, overload
 
 import numpy as np
 
-from . import loader, effects
+from . import effects, loader
+from .effect_registry import Effect
 
 
 class Beats:
@@ -21,7 +22,7 @@ class Beats:
         self._channels = channels
         self._beats = beats
 
-    def apply(self, effect: effects.base.Effect) -> "Beats":
+    def apply(self, effect: Effect) -> "Beats":
         """
         Applies a single effect and returns a new Beats object.
 
@@ -30,7 +31,7 @@ class Beats:
         """
         return Beats(self._sr, self._channels, list(effect(self._beats)))
 
-    def apply_all(self, *effects_list: List[effects.base.Effect]) -> "Beats":
+    def apply_all(self, *effects_list: List[Effect]) -> "Beats":
         """
         Applies a list of effects and returns a new Beats object.
         This is the best way to apply multiple effects, since it only collects

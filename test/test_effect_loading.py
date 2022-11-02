@@ -1,6 +1,7 @@
 import pytest
 
 import beatmachine.effects as fx
+from beatmachine.effect_registry import EffectRegistry
 
 
 @pytest.mark.parametrize(
@@ -30,4 +31,4 @@ import beatmachine.effects as fx
     ],
 )
 def test_load_effect(definition, expected):
-    assert fx.load_effect(definition) == expected
+    assert EffectRegistry.load_effect(definition) == expected
