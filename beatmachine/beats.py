@@ -1,10 +1,10 @@
 import subprocess
 from functools import reduce
-from typing import BinaryIO, List, Union, overload
+from typing import BinaryIO, List, Union
 
 import numpy as np
 
-from . import effects, loader
+from . import loader
 from .effect_registry import Effect
 
 
