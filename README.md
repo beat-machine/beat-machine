@@ -1,14 +1,13 @@
 # beat-machine
 
-![PyPI Version](https://img.shields.io/pypi/v/beatmachine)
-![Build Status](https://github.com/beat-machine/beat-machine/workflows/Build/badge.svg)
-
 The Beat Machine is a free tool for creating "every other beat is missing" remixes -- and many other kind of beat
 edits, too.
 
 To use The Beat Machine from your browser, try the official web interface at https://beatmachine.branchpanic.me.
 
 ## Installation
+
+![PyPI Version](https://img.shields.io/pypi/v/beatmachine)
 
 TBM is available on PyPI and can be installed with `pip install beatmachine`.
 
