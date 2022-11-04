@@ -113,8 +113,5 @@ venv.bak/
 .idea/
 .vscode/
 
-# Audio files used in unit test
-!tests/resources/*.mp3
-
-# Auto-generated setup.py
-setup.py
+# WSL extended attributes
+*:Zone.Identifier
