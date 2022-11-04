@@ -1,10 +1,11 @@
 import subprocess
 from functools import reduce
-from typing import List, BinaryIO, Union, overload
+from typing import BinaryIO, List, Union
 
 import numpy as np
 
-from . import loader, effects
+from . import loader
+from .effect_registry import Effect
 
 
 class Beats:
@@ -21,7 +22,7 @@ class Beats:
         self._channels = channels
         self._beats = beats
 
-    def apply(self, effect: effects.base.Effect) -> "Beats":
+    def apply(self, effect: Effect) -> "Beats":
         """
         Applies a single effect and returns a new Beats object.
 
@@ -30,7 +31,7 @@ class Beats:
         """
         return Beats(self._sr, self._channels, list(effect(self._beats)))
 
-    def apply_all(self, *effects_list: List[effects.base.Effect]) -> "Beats":
+    def apply_all(self, *effects_list: List[Effect]) -> "Beats":
         """
         Applies a list of effects and returns a new Beats object.
         This is the best way to apply multiple effects, since it only collects
@@ -53,9 +54,7 @@ class Beats:
         """
         return np.concatenate(list(self._beats), axis=0)
 
-    def _create_ffmpeg_command(
-        self, dst: str, out_format: str = None, extra_args: List[str] = None
-    ):
+    def _create_ffmpeg_command(self, dst: str, out_format: str = None, extra_args: List[str] = None):
         cmd = [
             # fmt: off
             "ffmpeg",
@@ -77,9 +76,7 @@ class Beats:
         cmd.append(dst)
         return cmd
 
-    def _save_to_file(
-        self, filename: str, out_format: str = None, extra_ffmpeg_args: List[str] = None
-    ):
+    def _save_to_file(self, filename: str, out_format: str = None, extra_ffmpeg_args: List[str] = None):
         p = subprocess.Popen(
             self._create_ffmpeg_command(filename, out_format, extra_ffmpeg_args),
             stdin=subprocess.PIPE,
@@ -88,9 +85,7 @@ class Beats:
         p.stdin.close()
         p.wait()
 
-    def _save_to_binary_io(
-        self, fp: BinaryIO, out_format: str = None, extra_ffmpeg_args: List[str] = None
-    ):
+    def _save_to_binary_io(self, fp: BinaryIO, out_format: str = None, extra_ffmpeg_args: List[str] = None):
         if not out_format:
             raise ValueError("out_format is required when writing to file-like object")
 

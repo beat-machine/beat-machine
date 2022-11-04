@@ -1,7 +1,7 @@
 """
 The ``loader`` module contains functions for loading beats from song files.
 """
-from typing import BinaryIO, Union, Generator, Callable, Iterable, Tuple
+from typing import BinaryIO, Callable, Generator, Iterable, Tuple, Union
 
 import numpy as np
 from madmom.audio import Signal
@@ -39,9 +39,7 @@ def load_beats_by_signal(
     return sig.sample_rate, sig.num_channels, generator()
 
 
-def load_beats_by_bpm(
-    fp: Union[str, BinaryIO], bpm: int
-) -> Tuple[int, int, Generator[np.ndarray, None, None]]:
+def load_beats_by_bpm(fp: Union[str, BinaryIO], bpm: int) -> Tuple[int, int, Generator[np.ndarray, None, None]]:
     """
     A generator that loads beats strictly by a given BPM assuming no fluctuations in tempo. Significantly faster than
     `load_beats_by_signal` but far less accurate, especially in live performances.

@@ -1,12 +1,13 @@
 """
-The `effects` module provides a base effect class as well as some common effects to play with.
+The `effects` module provides some common effects to play with.
 """
 
-from . import base, periodic, temporal
-
-load_from_dict = base.EffectRegistry.load_effect_from_dict
-load_effect = base.EffectRegistry.load_effect
-load_effect_chain = base.EffectRegistry.load_effect_chain
-
-from .periodic import *
-from .temporal import *
+from .cut import CutEveryNth
+from .randomize import RandomizeAllBeats
+from .remap import RemapBeats
+from .remove import RemoveEveryNth
+from .repeat import RepeatEveryNth
+from .reverse import ReverseEveryNth
+from .reverse_order import ReverseAllBeats
+from .silence import SilenceEveryNth
+from .swap import SwapBeats

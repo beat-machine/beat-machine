@@ -1,17 +1,10 @@
-"""
-The `base` module contains a base effect class as well as a metaclass-based registry for simple, batteries-included
-deserialization of effects.
-"""
-
 import abc
 import re
-
+from inspect import getdoc
 from typing import Callable, Iterable
 
 import numpy as np
 from jsonschema import validate
-from deprecation import deprecated
-from inspect import getdoc
 
 Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
 
@@ -54,9 +47,7 @@ class EffectRegistry(type):
                     "type": "object",
                     "properties": properties,
                     "title": e.capitalize(),
-                    "description": re.sub(
-                        "\\s+", " ", getdoc(EffectRegistry.effects[e])
-                    ),
+                    "description": re.sub("\\s+", " ", getdoc(EffectRegistry.effects[e])),
                     "required": ["type"],
                     "additionalProperties": False,
                 }
@@ -107,15 +98,6 @@ class EffectRegistry(type):
     def load_effect_chain(effects: Iterable[dict]):
         return [EffectRegistry.load_effect(e) for e in effects]
 
-    @staticmethod
-    @deprecated(
-        deprecated_in="3.2.0",
-        removed_in="4.0.0",
-        details="Prefer ``EffectRegistry.load_effect`` or ``beatmachine.effects.load_effect``.",
-    )
-    def load_effect_from_dict(effect: dict) -> "LoadableEffect":
-        return EffectRegistry.load_effect(effect)
-
 
 class EffectABCMeta(EffectRegistry, abc.ABCMeta):
     """
@@ -132,13 +114,7 @@ class LoadableEffect(abc.ABC):
 
     __abstract__ = True
 
-    @property
-    @abc.abstractmethod
-    def __effect_name__(self) -> str:
-        """
-        __effect_name__ is the name of this effect.
-        """
-        raise NotImplementedError
+    __effect_name__: str = NotImplemented
 
     @abc.abstractmethod
     def __call__(self, beats: Iterable[np.ndarray]) -> Iterable[np.ndarray]:
