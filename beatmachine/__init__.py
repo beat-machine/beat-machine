@@ -1,2 +1,2 @@
-from . import effects, loader
+from . import effects, backends
 from .beats import Beats

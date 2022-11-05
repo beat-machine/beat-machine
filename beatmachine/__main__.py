@@ -12,7 +12,7 @@ from beatmachine.effect_registry import EffectRegistry
 
 def main():
     p = argparse.ArgumentParser(prog="beatmachine")
-    p.add_argument("--version", "-v", action="version", version=bm.__version__)
+    p.add_argument("--version", "-v", action="version", version="4.0.0-alpha")  # TODO: don't hardcode
     p.add_argument("--input", "-i", help="Input MP3 or Beat file")
     p.add_argument("--effects", "-e", help="JSON effects to apply")
     p.add_argument("--output", "-o", help="Output MP3 file")
@@ -48,26 +48,17 @@ def main():
     validate(instance=effects_json, schema=EffectRegistry.dump_list_schema())
     effects = EffectRegistry.load_effect_chain(effects_json)
 
-    loader = bm.loader.load_beats_by_signal
     filename = os.path.splitext(args.input)
     if args.bpm is not None:
         if filename[1].lower() == ".beat":
             print("BPM already encoded in beat file. If you want to change this, please use the MP3.")
             sys.exit()
-        else:
-
-            def loader(f):
-                return bm.loader.load_beats_by_signal(
-                    f,
-                    min_bpm=args.bpm - args.tolerance,
-                    max_bpm=args.bpm + args.tolerance,
-                )
 
     effect_count = len(effects)
     if os.path.isfile(args.input):
         if filename[1].lower() == ".mp3":
             print("Locating beats (this may take a while)")
-            beats = bm.Beats.from_song(args.input, beat_loader=loader)
+            beats = bm.Beats.from_song(args.input)
             if args.serialize is True:
                 with open(filename[0] + ".beat", "wb") as fp:
                     fp.write(pickle.dumps(beats))
