@@ -1,6 +1,6 @@
+import dataclasses
 import subprocess
 import typing as t
-import dataclasses
 from functools import reduce
 
 import numpy as np
@@ -11,14 +11,13 @@ from .backends.madmom import MadmomDbnBackend
 from .effect_registry import Effect
 
 
-_DEFAULT_BACKEND = MadmomDbnBackend()
-
 @dataclasses.dataclass
 class PreprocessOpts:
     resample: t.Optional[int] = None  # Resample to the given sample rate before processing
     downmix: bool = False  # Downmix to mono before processing
 
 
+_DEFAULT_BACKEND = MadmomDbnBackend()
 _DEFAULT_PREPROCESS_OPTS = PreprocessOpts()
 
 
@@ -138,14 +137,12 @@ class Beats:
 
     @staticmethod
     def from_song(
-        fp: t.Union[str, t.BinaryIO],
-        backend: Backend = None,
-        preprocess_opts: PreprocessOpts = None
+        fp: t.Union[str, t.BinaryIO], backend: Backend = None, preprocess_opts: PreprocessOpts = None
     ) -> "Beats":
         backend = backend or _DEFAULT_BACKEND
         preprocess_opts = preprocess_opts or _DEFAULT_PREPROCESS_OPTS
 
-        signal, sample_rate = sf.read(fp, dtype='float64')
+        signal, sample_rate = sf.read(fp, dtype="float64")
         beat_locations = np.array(backend.locate_beats(signal, sample_rate), dtype=np.int64)
         channels = 1
         if len(signal.shape) >= 1:

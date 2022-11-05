@@ -6,6 +6,7 @@ from madmom.features import DBNBeatTrackingProcessor, RNNBeatProcessor
 
 from ..backend import Backend
 
+
 class MadmomDbnBackend(Backend):
     def __init__(self, min_bpm: int = 60, max_bpm: int = 300, fps: int = 100) -> None:
         super().__init__()

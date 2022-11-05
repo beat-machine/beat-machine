@@ -4,6 +4,7 @@ import numpy as np
 
 from ..backend import Backend
 
+
 class BpmBackend(Backend):
     def __init__(self, bpm: float, downbeat_ms: float) -> None:
         super().__init__()
