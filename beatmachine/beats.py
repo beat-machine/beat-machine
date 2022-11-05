@@ -17,8 +17,8 @@ class PreprocessOpts:
     resample: t.Optional[int] = None  # Resample to the given sample rate before processing
 
 
-_DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)
-_DEFAULT_PREPROCESS_OPTS = PreprocessOpts(downmix=True, resample=11000)
+_DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)  # TODO: 2 might be sufficient
+_DEFAULT_PREPROCESS_OPTS = PreprocessOpts()  # Madmom backend does its own preprocessing (1 ch, 44100 hz)
 
 
 class Beats:
@@ -158,12 +158,13 @@ class Beats:
             length = detection_signal.shape[0]
             original_t = np.arange(length)
             resample_t = np.linspace(0, length, int(length / sample_rate * detection_sample_rate))
+
             def interp(a):
                 return np.interp(resample_t, original_t, a)
+
             detection_signal = np.apply_along_axis(interp, 0, detection_signal)
 
         beat_locations = np.array(backend.locate_beats(detection_signal, detection_sample_rate))
         beat_locations = (beat_locations / detection_sample_rate * sample_rate).astype(np.int64)
 
-        print(sample_rate, channels, beat_locations)
         return Beats(sample_rate, channels, np.split(signal, beat_locations))
