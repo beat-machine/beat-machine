@@ -13,12 +13,12 @@ from .effect_registry import Effect
 
 @dataclasses.dataclass
 class PreprocessOpts:
-    resample: t.Optional[int] = None  # Resample to the given sample rate before processing
     downmix: bool = False  # Downmix to mono before processing
+    resample: t.Optional[int] = None  # Resample to the given sample rate before processing
 
 
-_DEFAULT_BACKEND = MadmomDbnBackend()
-_DEFAULT_PREPROCESS_OPTS = PreprocessOpts()
+_DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)
+_DEFAULT_PREPROCESS_OPTS = PreprocessOpts(downmix=True, resample=11000)
 
 
 class Beats:
@@ -143,10 +143,27 @@ class Beats:
         preprocess_opts = preprocess_opts or _DEFAULT_PREPROCESS_OPTS
 
         signal, sample_rate = sf.read(fp, dtype="float64")
-        beat_locations = np.array(backend.locate_beats(signal, sample_rate), dtype=np.int64)
         channels = 1
         if len(signal.shape) >= 1:
             channels = signal.shape[1]
+
+        detection_signal = signal
+        detection_sample_rate = sample_rate
+
+        if preprocess_opts.downmix:
+            detection_signal = np.mean(detection_signal, 1)
+
+        if preprocess_opts.resample:
+            detection_sample_rate = preprocess_opts.resample
+            length = detection_signal.shape[0]
+            original_t = np.arange(length)
+            resample_t = np.linspace(0, length, int(length / sample_rate * detection_sample_rate))
+            def interp(a):
+                return np.interp(resample_t, original_t, a)
+            detection_signal = np.apply_along_axis(interp, 0, detection_signal)
+
+        beat_locations = np.array(backend.locate_beats(detection_signal, detection_sample_rate))
+        beat_locations = (beat_locations / detection_sample_rate * sample_rate).astype(np.int64)
 
         print(sample_rate, channels, beat_locations)
         return Beats(sample_rate, channels, np.split(signal, beat_locations))
