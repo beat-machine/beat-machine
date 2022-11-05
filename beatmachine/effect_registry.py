@@ -9,6 +9,9 @@ from jsonschema import validate
 Effect = Callable[[Iterable[np.ndarray]], Iterable[np.ndarray]]
 
 
+# TODO: EffectRegistry is confusing, and is serving multiple purposes here. A decorator would probably be better than
+# a metaclass.
+
 class EffectRegistry(type):
     """
     The EffectRegistry is a metaclass that serves to track all loadable effects. Effects may define zero or more of
