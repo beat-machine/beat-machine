@@ -1,11 +1,16 @@
 import subprocess
+import typing as t
 from functools import reduce
-from typing import BinaryIO, List, Union
 
 import numpy as np
+import soundfile as sf
 
-from . import loader
+from .backend import Backend
+from .backends.madmom import MadmomDbnBackend
 from .effect_registry import Effect
+
+
+_DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)  # TODO: 2 might be sufficient, test more
 
 
 class Beats:
@@ -13,12 +18,12 @@ class Beats:
     The Beats class is a convenient immutable wrapper for applying effects to songs.
     """
 
-    _sr: int
+    _sample_rate: int
     _channels: int
-    _beats: List[np.ndarray]
+    _beats: t.List[np.ndarray]
 
-    def __init__(self, sr: int, channels: int, beats: List[np.ndarray]):
-        self._sr = sr
+    def __init__(self, sample_rate: int, channels: int, beats: t.List[np.ndarray]):
+        self._sample_rate = sample_rate
         self._channels = channels
         self._beats = beats
 
@@ -29,9 +34,9 @@ class Beats:
         :param effect: Effect to apply.
         :return: A new Beats object with the given effect applied.
         """
-        return Beats(self._sr, self._channels, list(effect(self._beats)))
+        return Beats(self._sample_rate, self._channels, list(effect(self._beats)))
 
-    def apply_all(self, *effects_list: List[Effect]) -> "Beats":
+    def apply_all(self, *effects_list: t.List[Effect]) -> "Beats":
         """
         Applies a list of effects and returns a new Beats object.
         This is the best way to apply multiple effects, since it only collects
@@ -41,7 +46,8 @@ class Beats:
         :return: A new Beats object with the given effects applied.
         """
         return Beats(
-            self._sr,
+            self._sample_rate,
+            self._channels,
             reduce(lambda beats, effect: effect(beats), effects_list, self._beats),
         )
 
@@ -53,15 +59,15 @@ class Beats:
         """
         return np.concatenate(list(self._beats), axis=0)
 
-    def _create_ffmpeg_command(self, dst: str, out_format: str = None, extra_args: List[str] = None):
+    def _create_ffmpeg_command(self, dst: str, out_format: str = None, extra_args: t.List[str] = None):
         cmd = [
             # fmt: off
             "ffmpeg",
             "-hide_banner",
             "-loglevel", "panic",
             "-y",
-            "-f", "s16le",
-            "-ar", str(self._sr),
+            "-f", "f64le",
+            "-ar", str(self._sample_rate),
             "-ac", str(self._channels),
             "-i", "-",
             # fmt: on
@@ -76,7 +82,7 @@ class Beats:
         cmd.append(dst)
         return cmd
 
-    def _save_to_file(self, filename: str, out_format: str = None, extra_ffmpeg_args: List[str] = None):
+    def _save_to_file(self, filename: str, out_format: str = None, extra_ffmpeg_args: t.List[str] = None):
         p = subprocess.Popen(
             self._create_ffmpeg_command(filename, out_format, extra_ffmpeg_args),
             stdin=subprocess.PIPE,
@@ -85,7 +91,7 @@ class Beats:
         p.stdin.close()
         p.wait()
 
-    def _save_to_binary_io(self, fp: BinaryIO, out_format: str = None, extra_ffmpeg_args: List[str] = None):
+    def _save_to_binary_io(self, fp: t.BinaryIO, out_format: str = None, extra_ffmpeg_args: t.List[str] = None):
         if not out_format:
             raise ValueError("out_format is required when writing to file-like object")
 
@@ -101,18 +107,18 @@ class Beats:
 
         return fp.write(stdout)
 
-    def save(self, fp, out_format=None, extra_ffmpeg_args: List[str] = None):
+    def save(self, fp, out_format=None, extra_ffmpeg_args: t.List[str] = None):
         if isinstance(fp, str):
             return self._save_to_file(fp, out_format, extra_ffmpeg_args)
         else:
             return self._save_to_binary_io(fp, out_format, extra_ffmpeg_args)
 
     @property
-    def sr(self):
+    def sample_rate(self):
         """
         :return: Audio sample rate.
         """
-        return self._sr
+        return self._sample_rate
 
     @property
     def channels(self):
@@ -122,15 +128,14 @@ class Beats:
         return self._channels
 
     @staticmethod
-    def from_song(
-        path_or_fp: Union[str, BinaryIO],
-        beat_loader: loader.BeatLoader = loader.load_beats_by_signal,
-    ) -> "Beats":
-        """
-        Loads a song as a Beats object.
+    def from_song(fp: t.Union[str, t.BinaryIO], backend: Backend = None) -> "Beats":
+        backend = backend or _DEFAULT_BACKEND
 
-        :param path_or_fp: Path or file-like object to load from.
-        :param beat_loader: Callable to load and split the given path/file-like object into beats.
-        """
-        sr, channels, beats = beat_loader(path_or_fp)
-        return Beats(sr, channels, list(beats))
+        signal, sample_rate = sf.read(fp, dtype="float64")
+        channels = 1
+        if len(signal.shape) >= 1:
+            channels = signal.shape[1]
+
+        beat_locations = np.array(backend.locate_beats(signal, sample_rate)).astype(np.int64)
+
+        return Beats(sample_rate, channels, np.split(signal, beat_locations))
