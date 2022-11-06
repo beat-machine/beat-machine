@@ -11,14 +11,7 @@ from .backends.madmom import MadmomDbnBackend
 from .effect_registry import Effect
 
 
-@dataclasses.dataclass
-class PreprocessOpts:
-    downmix: bool = False  # Downmix to mono before processing
-    resample: t.Optional[int] = None  # Resample to the given sample rate before processing
-
-
-_DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)  # TODO: 2 might be sufficient
-_DEFAULT_PREPROCESS_OPTS = PreprocessOpts()  # Madmom backend does its own preprocessing (1 ch, 44100 hz)
+_DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)  # TODO: 2 might be sufficient, test more
 
 
 class Beats:
@@ -136,35 +129,14 @@ class Beats:
         return self._channels
 
     @staticmethod
-    def from_song(
-        fp: t.Union[str, t.BinaryIO], backend: Backend = None, preprocess_opts: PreprocessOpts = None
-    ) -> "Beats":
+    def from_song(fp: t.Union[str, t.BinaryIO], backend: Backend = None) -> "Beats":
         backend = backend or _DEFAULT_BACKEND
-        preprocess_opts = preprocess_opts or _DEFAULT_PREPROCESS_OPTS
 
         signal, sample_rate = sf.read(fp, dtype="float64")
         channels = 1
         if len(signal.shape) >= 1:
             channels = signal.shape[1]
 
-        detection_signal = signal
-        detection_sample_rate = sample_rate
-
-        if preprocess_opts.downmix:
-            detection_signal = np.mean(detection_signal, 1)
-
-        if preprocess_opts.resample:
-            detection_sample_rate = preprocess_opts.resample
-            length = detection_signal.shape[0]
-            original_t = np.arange(length)
-            resample_t = np.linspace(0, length, int(length / sample_rate * detection_sample_rate))
-
-            def interp(a):
-                return np.interp(resample_t, original_t, a)
-
-            detection_signal = np.apply_along_axis(interp, 0, detection_signal)
-
-        beat_locations = np.array(backend.locate_beats(detection_signal, detection_sample_rate))
-        beat_locations = (beat_locations / detection_sample_rate * sample_rate).astype(np.int64)
+        beat_locations = np.array(backend.locate_beats(signal, sample_rate)).astype(np.int64)
 
         return Beats(sample_rate, channels, np.split(signal, beat_locations))
