@@ -1,9 +1,7 @@
 import numpy as np
 
-from ..backend import Backend
 
-
-class BpmBackend(Backend):
+class BpmBackend:
     def __init__(self, bpm: float, first_beat_ms: float) -> None:
         super().__init__()
         self.bpm = bpm

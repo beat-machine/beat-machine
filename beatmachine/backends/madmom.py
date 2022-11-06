@@ -6,10 +6,8 @@ from madmom.audio import Signal
 from madmom.features.beats import DBNBeatTrackingProcessor, RNNBeatProcessor
 from madmom.models import MODEL_PATH as MADMOM_MODEL_PATH
 
-from ..backend import Backend
 
-
-class MadmomDbnBackend(Backend):
+class MadmomDbnBackend:
     def __init__(self, min_bpm: int = 60, max_bpm: int = 300, fps: int = 100, model_count: int = 8) -> None:
         super().__init__()
         self.min_bpm = min_bpm
