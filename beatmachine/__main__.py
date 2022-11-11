@@ -1,4 +1,5 @@
 import argparse
+import importlib.metadata
 import json
 import os
 import pickle
@@ -11,8 +12,13 @@ from beatmachine.effect_registry import EffectRegistry
 
 
 def main():
+    try:
+        version = importlib.metadata.version("beatmachine")
+    except importlib.metadata.PackageNotFoundError:
+        version = "unknown (package not installed)"
+
     p = argparse.ArgumentParser(prog="beatmachine")
-    p.add_argument("--version", "-v", action="version", version="4.0.0-alpha")  # TODO: don't hardcode
+    p.add_argument("--version", "-v", action="version", version=version)  # TODO: don't hardcode
     p.add_argument("--input", "-i", help="Input MP3 or Beat file")
     p.add_argument("--effects", "-e", help="JSON effects to apply")
     p.add_argument("--output", "-o", help="Output MP3 file")

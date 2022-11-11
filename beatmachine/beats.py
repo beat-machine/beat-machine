@@ -9,7 +9,6 @@ from .backend import Backend
 from .backends.madmom import MadmomDbnBackend
 from .effect_registry import Effect
 
-
 _DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)  # TODO: 2 might be sufficient, test more
 
 
