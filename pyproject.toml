@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "beatmachine"
-version = "4.0.0-alpha"
+version = "4.0.0-alpha.1"
 description = "A library for procedurally remixing songs"
 authors = ["branchpanic <hi@branchpanic.me>"]
 license = "MIT"
