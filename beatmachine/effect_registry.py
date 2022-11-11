@@ -42,26 +42,35 @@ class EffectRegistry(type):
         effects that define ``__effect_schema__`` will be included.
         """
         any_of = []
-        for e, s in EffectRegistry.schemas.items():
-            properties = {"type": {"const": e, "default": e, "format": "hidden"}}
-            if s:
-                properties.update(s)
-            any_of.append(
-                {
-                    "type": "object",
-                    "properties": properties,
-                    "title": e.capitalize(),
-                    "description": re.sub("\\s+", " ", getdoc(EffectRegistry.effects[e])),
-                    "required": ["type"],
-                    "additionalProperties": False,
-                }
-            )
+        for effect_name in EffectRegistry.schemas.keys():
+            any_of.append(EffectRegistry.dump_single_effect_schema(effect_name))
 
         schema = {"title": "Effect", "anyOf": any_of}
         if root:
             schema["$schema"] = "http://json-schema.org/draft-07/schema#"
 
         return schema
+
+    @staticmethod
+    def dump_single_effect_schema(effect_name: str, root: bool = False) -> dict:
+        schema = EffectRegistry.schemas[effect_name]
+        properties = {"type": {"const": effect_name, "default": effect_name, "format": "hidden"}}
+        if schema:
+            properties.update(schema)
+
+        result = {
+            "type": "object",
+            "properties": properties,
+            "title": effect_name.capitalize(),
+            "description": re.sub("\\s+", " ", getdoc(EffectRegistry.effects[effect_name])),
+            "required": ["type"],
+            "additionalProperties": False,
+        }
+
+        if root:
+            result["$schema"] = "http://json-schema.org/draft-07/schema#"
+
+        return result
 
     @staticmethod
     def dump_list_schema(root: bool = False) -> dict:

@@ -3,11 +3,13 @@ import json
 import os
 import pickle
 import textwrap
+from types import SimpleNamespace
 
 import click
 from jsonschema.exceptions import ValidationError
 
 import beatmachine as bm
+from beatmachine.backends.madmom import MadmomDbnBackend
 from beatmachine.effect_registry import EffectRegistry
 
 
@@ -15,7 +17,12 @@ def _hint(msg):
     click.secho("Hint: " + msg, fg="blue")
 
 
-class BeatsFromDisk(click.Path):
+def _load_beats_from_song(ctx, input):
+    backend = MadmomDbnBackend(min_bpm=ctx.obj.min_bpm, max_bpm=ctx.obj.max_bpm, model_count=4)
+    return bm.Beats.from_song(input, backend)
+
+
+class BeatsParam(click.Path):
     def __init__(self, preprocess_hint=True):
         super().__init__(exists=True, dir_okay=False)
         self.preprocess_hint = preprocess_hint
@@ -37,22 +44,17 @@ class BeatsFromDisk(click.Path):
                     _hint(f'Replacing "{value}" with "{stem}.beat" will skip this processing step')
 
             click.echo(f"Locating beats in {value}")
-            beats = bm.Beats.from_song(value, loader_args=ctx.obj)
+            beats = _load_beats_from_song(ctx, value)
 
         return (beats, value)
 
 
-class EffectChain(click.ParamType):
+class EffectsParam(click.ParamType):
     name = "effects"
 
     def convert(self, value, param, ctx):
         if not value:
             return None
-
-        # Check in the following order:
-        #  1. Inline JSON
-        #  2. Local path (absolute or relative to current directory)
-        #  3. User preset folder (something like ~/.beatmachine/presets or env)
 
         try:
             effects_obj = json.loads(value)
@@ -61,10 +63,10 @@ class EffectChain(click.ParamType):
                 with open(value, "r") as effects_file:
                     effects_obj = json.load(effects_file)
             except:
-                self.fail("Effect argument should be an inline JSON string or a JSON file")
+                self.fail("Effect argument should be an inline JSON string or a path to a file")
 
         if not isinstance(effects_obj, list):
-            self.fail("Effect root JSON object must be an array")
+            effects_obj = [effects_obj]
 
         try:
             return EffectRegistry.load_effect_chain(effects_obj)
@@ -73,10 +75,11 @@ class EffectChain(click.ParamType):
 
 
 @click.group()
-@click.option("-b", "--min-bpm", type=int, default=60, help="Minimum BPM of input audio, if applicable.")
-@click.option("-B", "--max-bpm", type=int, default=300, help="Maximum BPM of input audio, if applicable.")
+@click.option("-b", "--min-bpm", type=int, default=60, help="Minimum BPM")
+@click.option("-B", "--max-bpm", type=int, default=300, help="Maximum BPM")
+@click.option("-y", "--skip-confirm", is_flag=True, help="If set, skip confirmation prompts")
 @click.pass_context
-def cli(ctx, min_bpm, max_bpm):
+def cli(ctx, min_bpm, max_bpm, skip_confirm):
     """
     Remix songs by rearranging and modifying beats.
 
@@ -84,16 +87,17 @@ def cli(ctx, min_bpm, max_bpm):
 
     View the repository at https://github.com/beat-machine/beat-machine.
     """
-    ctx.obj = {"min_bpm": min_bpm, "max_bpm": max_bpm}
+    ctx.obj = SimpleNamespace(min_bpm=min_bpm, max_bpm=max_bpm, skip_confirm=skip_confirm)
 
 
 @cli.command()
-@click.option("-e", "--effects", required=True, type=EffectChain())
+@click.option("-e", "--effects", required=True, type=EffectsParam())
 @click.option("-o", "--output", type=click.Path(writable=True, dir_okay=False))
-@click.argument("input", nargs=1, type=BeatsFromDisk())
-def apply(input, output, effects):
+@click.argument("input", nargs=1, type=BeatsParam())
+@click.pass_context
+def apply(ctx, input, output, effects):
     """
-    Apply effects to an input file.
+    Apply effects to a song.
 
     See all valid effects using the `effects` subcommand. Preprocessed files
     generated with `preprocess` can be used to skip the processing step.
@@ -110,7 +114,7 @@ def apply(input, output, effects):
 
         output = stem + "-out" + ext
 
-    if os.path.isfile(output):
+    if os.path.isfile(output) and not ctx.obj.skip_confirm:
         click.confirm(f"Overwrite existing file at {output}", abort=True)
 
     click.echo("Applying effects")
@@ -128,7 +132,7 @@ def apply(input, output, effects):
 @click.pass_context
 def preprocess(ctx, input, output):
     """
-    Locate and beats in an audio file for use with `apply`.
+    Locate beats in an audio file and save them for later use.
     """
 
     if input.endswith(".beat"):
@@ -139,9 +143,10 @@ def preprocess(ctx, input, output):
         output = os.path.splitext(input)[0] + ".beat"
 
     click.echo(f"Processing {input}")
-    beats = bm.Beats.from_song(input, loader_args=ctx.obj)
 
-    if os.path.isfile(output):
+    beats = _load_beats_from_song(ctx, input)
+
+    if os.path.isfile(output) and not ctx.obj['skip_confirm']:
         click.confirm(f"Overwrite existing file at {output}", abort=True)
 
     click.echo(f"Writing beats to {output}")
@@ -151,57 +156,65 @@ def preprocess(ctx, input, output):
     print("Done!")
 
 
-@cli.command("validate")
-@click.argument("input", nargs=1, type=click.Path(exists=True, dir_okay=False))
-def validate_effects():
-    """
-    Validate a JSON effect chain.
-    """
-    pass
+def _print_effect_human_readable(effect_cls):
+    effect_name = effect_cls.__effect_name__
+    print(effect_name)
+
+    print()
+    print("Description")
+    description = inspect.cleandoc(effect_cls.__doc__) or "No description."
+    print(textwrap.fill(description, initial_indent=2 * " ", subsequent_indent=2 * " "))
+
+    print()
+    print("Parameters")
+
+    example_obj = {'type': effect_name}
+    schema = effect_cls.__effect_schema__
+    if schema:
+        for param, param_schema in schema.items():
+            example_obj[param] = param_schema['default']
+            print(f'  {param} ({param_schema["type"]}) - {param_schema["title"]}')
+            if "description" in param_schema:
+                print(textwrap.fill(param_schema["description"], initial_indent=4 * " ", subsequent_indent=4 * " "))
+    else:
+        print("  No parameters.")
+
+    print()
+    print("Example JSON")
+    print('  ', json.dumps(example_obj), sep='')
 
 
 @cli.command("effects")
-@click.option("-j", "--json-schema", is_flag=True, help="If set, outputs a JSON schema for effect chains.")
-@click.option("-n", "--names-only", is_flag=True, help="If set, prints a list of effect names.")
-def list_effects(json_schema, names_only):
+@click.option("-j", "--json-schema", is_flag=True, help="If set, formats output as a JSON schema.")
+@click.argument("effect", type=str, required=False)
+def effect_info(json_schema, effect):
     """
-    List all available effects in various formats.
+    List all available effects.
     """
 
-    if json_schema:
-        print(json.dumps(bm.effects.base.EffectRegistry.dump_list_schema(root=True)))
-        return
+    effects = EffectRegistry.effects
 
-    effects = bm.effects.base.EffectRegistry.effects
+    # if no effect name is given, list all effects.
+    if not effect:
+        if json_schema:
+            print(json.dumps(EffectRegistry.dump_list_schema(root=True)))
+            return
 
-    if names_only:
         for name in effects.keys():
             print(name)
         return
 
-    print(f"{len(effects)} effects are available.")
+    try:
+        effect_cls = effects[effect.lower()]
+    except KeyError:
+        click.echo(f"Couldn't find an effect named `{effect}`. Use `beatmachine effects` to get a list of effects.", err=True)
+        return
 
-    # TODO: Clean up
-    for name, effect_cls in effects.items():
-        print()
-        print(name)
+    if json_schema:
+        print(json.dumps(EffectRegistry.dump_single_effect_schema(effect.lower(), root=True)))
+        return
 
-        print()
-        print("  Description")
-        description = inspect.cleandoc(effect_cls.__doc__) or "No description."
-        print(textwrap.fill(description, initial_indent=4 * " ", subsequent_indent=4 * " "))
-
-        print()
-        print("  Parameters")
-
-        schema = effect_cls.__effect_schema__
-        if schema:
-            for param, param_schema in schema.items():
-                print(f'    {param} ({param_schema["type"]}) - {param_schema["title"]}')
-                if "description" in param_schema:
-                    print(textwrap.fill(param_schema["description"], initial_indent=6 * " ", subsequent_indent=6 * " "))
-        else:
-            print("    No parameters.")
+    _print_effect_human_readable(effect_cls)
 
 
 if __name__ == "__main__":

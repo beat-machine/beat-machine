@@ -10,9 +10,10 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
     """
     An effect that remaps beats based on a list of target indices. For example, a remap effect with mapping [0, 3, 2, 1]
     behaves identically to a swap effect with periods 2 and 4.
-
-    Most effects can be emulated through Remap.
     """
+
+    # TODO: If remap can emulate many effects, then why have custom implementations for them? Just make them stubs that
+    #       generate remap arrays.
 
     __effect_name__ = "remap"
     __effect_schema__ = {
@@ -21,6 +22,7 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
             "items": {"type": "number"},
             "title": "Mapping",
             "description": "New order of beats, starting at 0. For example, the mapping [0, 3, 2, 1] swaps beats 2 and 4 every 4 beats. The mapping [0, 1, 1, 1] replaces beats 3 and 4 with beat 2.",
+            "default": [0, 3, 2, 1]
         }
     }
 
