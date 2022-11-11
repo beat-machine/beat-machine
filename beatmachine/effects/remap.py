@@ -22,7 +22,7 @@ class RemapBeats(LoadableEffect, metaclass=EffectABCMeta):
             "items": {"type": "number"},
             "title": "Mapping",
             "description": "New order of beats, starting at 0. For example, the mapping [0, 3, 2, 1] swaps beats 2 and 4 every 4 beats. The mapping [0, 1, 1, 1] replaces beats 3 and 4 with beat 2.",
-            "default": [0, 3, 2, 1]
+            "default": [0, 3, 2, 1],
         }
     }
 
