@@ -109,7 +109,10 @@ class EffectsParam(click.ParamType):
         try:
             return EffectRegistry.load_effect_chain(effects_obj)
         except ValidationError as e:
-            self.fail(f"Effect {e.instance} is invalid: {e.message}")
+            self.fail(
+                f"Effect contains an invalid value '{e.instance}'.\n"
+                "Use 'beatmachine effects' to view the list of effects and their parameters."
+            )
 
 
 @click.group()
@@ -136,13 +139,9 @@ def cli(ctx, min_bpm, max_bpm, skip_confirm, no_cache):
 @click.pass_context
 def apply(ctx, input, output, effects):
     """
-    Apply effects to a song.
+    Apply effects to a song or preprocessed `.beat` file.
 
-    See all valid effects using the `effects` subcommand. Preprocessed files
-    generated with `preprocess` can be used to skip the processing step.
-
-    Note that preprocessed files carry the same security risks as any pickled
-    Python objects. Only use .beat files from trusted sources!
+    See all valid effects using the 'effects' subcommand.
     """
     beats, filename = input
     stem, ext = os.path.splitext(filename)
@@ -198,14 +197,13 @@ def preprocess(ctx, input, output):
 def _print_effect_human_readable(effect_cls):
     effect_name = effect_cls.__effect_name__
     print(effect_name)
-
     print()
-    print("Description")
+
     description = inspect.cleandoc(effect_cls.__doc__) or "No description."
     print(textwrap.fill(description, initial_indent=2 * " ", subsequent_indent=2 * " "))
 
     print()
-    print("Parameters")
+    print("Parameters:")
 
     example_obj = {"type": effect_name}
     schema = effect_cls.__effect_schema__
@@ -219,7 +217,7 @@ def _print_effect_human_readable(effect_cls):
         print("  No parameters.")
 
     print()
-    print("Example JSON")
+    print("Example JSON:")
     print("  ", json.dumps(example_obj), sep="")
 
 
@@ -239,15 +237,19 @@ def effect_info(json_schema, effect):
             print(json.dumps(EffectRegistry.dump_list_schema(root=True)))
             return
 
+        print('Effects:')
         for name in effects.keys():
-            print(name)
+            print('  ' + name)
+
+        print()
+        print("Use 'beatmachine effects <effect name>' to view details about a specific effect.")
         return
 
     try:
         effect_cls = effects[effect.lower()]
     except KeyError:
         click.echo(
-            f"Couldn't find an effect named `{effect}`. Use `beatmachine effects` to get a list of effects.", err=True
+            f"Couldn't find an effect named '{effect}'. Use 'beatmachine effects' to get a list of effects.", err=True
         )
         return
 
