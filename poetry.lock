@@ -48,7 +48,7 @@ pycparser = "*"
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -59,7 +59,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 
@@ -323,7 +323,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "52bef2f6f50b5cfac41945ebebad3a3fc22ebbc1f7a567fb6acdc1b06837151d"
+content-hash = "d64ecf5cb483cb1367986f2813ca9ff4091cd94123c35864b7a08434d42741f0"
 
 [metadata.files]
 attrs = [
