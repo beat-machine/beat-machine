@@ -184,7 +184,7 @@ def preprocess(ctx, input, output):
 
     beats = _load_beats_from_song(ctx, input)
 
-    if os.path.isfile(output) and not ctx.obj["skip_confirm"]:
+    if os.path.isfile(output) and not ctx.obj.skip_confirm:
         click.confirm(f"Overwrite existing file at {output}", abort=True)
 
     click.echo(f"Writing beats to {output}")
