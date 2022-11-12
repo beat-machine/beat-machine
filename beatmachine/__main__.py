@@ -237,9 +237,9 @@ def effect_info(json_schema, effect):
             print(json.dumps(EffectRegistry.dump_list_schema(root=True)))
             return
 
-        print('Effects:')
+        print("Effects:")
         for name in effects.keys():
-            print('  ' + name)
+            print("  " + name)
 
         print()
         print("Use 'beatmachine effects <effect name>' to view details about a specific effect.")
