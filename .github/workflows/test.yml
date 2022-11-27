@@ -7,18 +7,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+          cache: 'poetry'
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ffmpeg
+          version: 1.0
       - name: Install dependencies
         run: |
-          sudo apt-get install ffmpeg
-          python -m pip install --upgrade pip
-          pip install poetry
-          poetry install -n
+          poetry install --no-root --no-interaction --no-ansi
       - name: Check style
         run: |
-          poetry run black --check . && poetry run isort --check .
+          poetry run black --check .
+          poetry run isort --check .
       - name: Test
         run: |
           poetry run pytest
