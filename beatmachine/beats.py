@@ -2,8 +2,8 @@ import subprocess
 import typing as t
 from functools import reduce
 
+import librosa
 import numpy as np
-import soundfile as sf
 
 from .backend import Backend
 from .backends.madmom import MadmomDbnBackend
@@ -130,7 +130,9 @@ class Beats:
     def from_song(fp: t.Union[str, t.BinaryIO], backend: Backend = None) -> "Beats":
         backend = backend or _DEFAULT_BACKEND
 
-        signal, sample_rate = sf.read(fp, dtype="float64")
+        signal, sample_rate = librosa.load(fp, sr=None, mono=False, dtype=np.float64)
+        signal = signal.T
+
         channels = 1
         if len(signal.shape) >= 1:
             channels = signal.shape[1]

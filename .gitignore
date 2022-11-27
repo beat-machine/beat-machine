@@ -103,11 +103,16 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# Extraneous files used in testing
+# Local scratch files
 *.mp3
+*.wav
 *.beat
 *.json
-!examples/*.json
+
+# Exclusions for examples and test data
+!tests/**/*.mp3
+!tests/**/*.wav
+!examples/**/*.json
 
 # IDE files
 .idea/
