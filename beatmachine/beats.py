@@ -1,15 +1,24 @@
 import subprocess
 import typing as t
 from functools import reduce
+from pathlib import Path
 
-import librosa
 import numpy as np
+from madmom.audio import Signal
 
 from .backend import Backend
 from .backends.madmom import MadmomDbnBackend
 from .effect_registry import Effect
 
 _DEFAULT_BACKEND = MadmomDbnBackend(model_count=4)  # TODO: 2 might be sufficient, test more
+
+
+def _load_audio(path: Path) -> t.Tuple[int, np.array]:
+    # TODO: Revisit python-soundfile once it bundles a recent version of libsndfile on linux:
+    #       https://github.com/bastibe/python-soundfile/issues/353. (Most distros still have a libsndfile version
+    #       that doesn't support MP3. Users could always build from source but we don't want that to be a requirement.)
+    s = Signal(str(path), sample_rate=None, num_channels=None, dtype=np.float64)
+    return s, s.sample_rate
 
 
 class Beats:
@@ -130,8 +139,7 @@ class Beats:
     def from_song(fp: t.Union[str, t.BinaryIO], backend: Backend = None) -> "Beats":
         backend = backend or _DEFAULT_BACKEND
 
-        signal, sample_rate = librosa.load(fp, sr=None, mono=False, dtype=np.float64)
-        signal = signal.T
+        signal, sample_rate = _load_audio(fp)
 
         channels = 1
         if len(signal.shape) >= 1:
