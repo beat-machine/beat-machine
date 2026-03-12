@@ -14,7 +14,7 @@ click = "^8.1.7"
 soundfile = "^0.12.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
+black = ">=24.10,<27.0"
 pytest = "^8.3.4"
 isort = "^5.13.2"
 
